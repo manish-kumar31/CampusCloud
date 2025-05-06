@@ -190,4 +190,51 @@ public class AdminStudentFacultyService {
 
     }
 
+
+    public Optional<Faculty> getFacultyByUnivId(String univId){
+
+        return facultyRepo.findFacultyByUnivId(univId);
+
+    }
+
+    public Faculty updateFaculty(String univId, Faculty updatedFaculty) {
+
+        Optional<Faculty> optionalFaculty = facultyRepo.findFacultyByUnivId(univId);
+
+        if (optionalFaculty.isPresent()) {
+            Faculty existingFaculty = optionalFaculty.get();
+
+            existingFaculty.setName(updatedFaculty.getName());
+            existingFaculty.setDob(updatedFaculty.getDob());
+            existingFaculty.setContactNo(updatedFaculty.getContactNo());
+            existingFaculty.setAddress(updatedFaculty.getAddress());
+            existingFaculty.setGender(updatedFaculty.getGender());
+            existingFaculty.setNationality(updatedFaculty.getNationality());
+            existingFaculty.setBloodGroup(updatedFaculty.getBloodGroup());
+            existingFaculty.setEmailId(updatedFaculty.getEmailId());
+            existingFaculty.setUnivId(updatedFaculty.getUnivId());
+
+            return facultyRepo.save(existingFaculty);
+        }
+        else{
+            return null;
+        }
+    }
+
+    public boolean deleteFaculty(String rollNo) {
+
+        Optional<Faculty> optionalFaculty = getFacultyByUnivId(rollNo);
+
+        if (optionalFaculty.isPresent()){
+            Faculty existingFaculty = optionalFaculty.get();
+            facultyRepo.delete(existingFaculty);
+            return true;
+        }
+        else{
+            return false;
+        }
+
+    }
+
+
 }

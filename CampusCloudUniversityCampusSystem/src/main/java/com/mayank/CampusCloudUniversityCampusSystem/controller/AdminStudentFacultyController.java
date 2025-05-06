@@ -87,5 +87,41 @@ public class AdminStudentFacultyController {
 
     }
 
+    @GetMapping("/faculty/{rollNo}")
+    public ResponseEntity <?> getFacultyByUnivId (@PathVariable String univId){
+
+        try {
+            Optional <Faculty> faculty  = service.getFacultyByUnivId(univId);
+            return new ResponseEntity <>(faculty,HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping ("/faculty/{rollNo}")
+    public ResponseEntity <?> updateFaculty (@PathVariable String univId,@RequestPart Faculty faculty){
+
+        try {
+            Faculty faculty1 = service.updateFaculty (univId,faculty);
+            return new ResponseEntity <>(faculty1,HttpStatus.OK);
+        }
+        catch (Exception e){
+            return  new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/faculty/{rollNo}")
+    public ResponseEntity <String> deleteFaculty (@PathVariable String univId){
+
+        if (service.deleteFaculty(univId)){
+            return new ResponseEntity<>("Deleted",HttpStatus.OK);
+        }
+
+        else{
+            return new ResponseEntity<>("Faculty not found",HttpStatus.NOT_FOUND);
+        }
+
+    }
 
 }
