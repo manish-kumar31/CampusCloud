@@ -109,6 +109,21 @@ public class AdminStudentFacultyService {
 
     }
 
+    public String generateUnivIdFaculty (String name,long contactNo){
+
+        long lastDigit = contactNo % 10;
+        long secondLastDigit = (contactNo / 10) % 10;
+        long thirdLastDigit = (contactNo / 100) % 10;
+
+        String []nameParts = name.split("\\s+");
+
+        String firstName = nameParts[1];
+
+        return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit)
+                + "@myuniv.edu";
+
+    }
+
     public String reverse (String name){
 
         return new StringBuilder(name).reverse().toString();
@@ -130,7 +145,7 @@ public class AdminStudentFacultyService {
     public Faculty uploadFacultyDetail(Faculty faculty) {
 
         Faculty savedFaculty =  facultyRepo.save(faculty);
-        savedFaculty.setUnivId(generateUnivId(savedFaculty.getName(),savedFaculty.getContactNo()));
+        savedFaculty.setUnivId(generateUnivIdFaculty(savedFaculty.getName(),savedFaculty.getContactNo()));
         return facultyRepo.save(savedFaculty);
 
     }

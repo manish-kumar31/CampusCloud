@@ -64,7 +64,7 @@ public class AdminStudentFacultyController {
     }
 
     @PutMapping ("/student/{rollNo}")
-    public ResponseEntity <?> updateStudent(@PathVariable String rollNo,@RequestPart Student student){
+    public ResponseEntity <?> updateStudent(@RequestBody Student student , @PathVariable String rollNo){
 
         try {
             Student student1 = service.updateStudent (rollNo,student);
@@ -87,7 +87,7 @@ public class AdminStudentFacultyController {
 
     }
 
-    @GetMapping("/faculty/{rollNo}")
+    @GetMapping("/faculty/{univId}")
     public ResponseEntity <?> getFacultyByUnivId (@PathVariable String univId){
 
         try {
@@ -99,8 +99,8 @@ public class AdminStudentFacultyController {
         }
     }
 
-    @PutMapping ("/faculty/{rollNo}")
-    public ResponseEntity <?> updateFaculty (@PathVariable String univId,@RequestPart Faculty faculty){
+    @PutMapping ("/faculty/{univId}")
+    public ResponseEntity <?> updateFaculty (@RequestBody Faculty faculty,@PathVariable String univId){
 
         try {
             Faculty faculty1 = service.updateFaculty (univId,faculty);
@@ -111,7 +111,7 @@ public class AdminStudentFacultyController {
         }
     }
 
-    @DeleteMapping("/faculty/{rollNo}")
+    @DeleteMapping("/faculty/{univId}")
     public ResponseEntity <String> deleteFaculty (@PathVariable String univId){
 
         if (service.deleteFaculty(univId)){
