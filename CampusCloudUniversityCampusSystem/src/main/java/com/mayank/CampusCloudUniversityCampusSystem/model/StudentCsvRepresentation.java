@@ -22,7 +22,7 @@ public class StudentCsvRepresentation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @CsvBindByName(column = "name")
     private String name;

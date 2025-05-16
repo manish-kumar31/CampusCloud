@@ -7,7 +7,6 @@ import lombok.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
 
 public class Faculty {
 

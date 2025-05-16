@@ -1,4 +1,6 @@
 package com.mayank.CampusCloudUniversityCampusSystem.repository;
 
-public interface AttendanceRepo {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AttendanceRepo  {
 }
