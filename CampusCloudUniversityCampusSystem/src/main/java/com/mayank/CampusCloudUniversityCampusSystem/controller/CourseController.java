@@ -1,5 +1,6 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
+import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.service.CourseService;
@@ -15,15 +16,14 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
 
     @Autowired
-    private Student student;
-    @Autowired
     private CourseService service;
 
     @PostMapping("/enrollStudents")
-    public  ResponseEntity <?> enrollStudents(){
+    public  ResponseEntity <?> enrollStudents(@RequestBody EnrollmentRequest request){
+
 
         try {
-            return new ResponseEntity<>(service.enrollStudents(), HttpStatus.OK);
+            return new ResponseEntity<>(service.addCourse(request), HttpStatus.OK);
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,5 +1,7 @@
 package com.mayank.CampusCloudUniversityCampusSystem.service;
 
+import com.mayank.CampusCloudUniversityCampusSystem.model.Course;
+import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.CourseRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
@@ -12,16 +14,16 @@ import java.util.List;
 public class CourseService {
 
     @Autowired
-    StudentRepo studentRepo;
-    @Autowired
     CourseRepo courseRepo;
 
-    public Integer  enrollStudents() {
+    @Autowired
+    Course course;
+    public Course addCourse(EnrollmentRequest request) {
 
-        List <Student> studentsList = studentRepo.findAll();
-        courseRepo.saveAll(studentsList);
-        return studentsList.size();
+        course.setCourseCode(request.getCourseCode());
+        course.setCourseName(request.getCourseName());
+        course.setCredits(request.getCredits());
 
+        return courseRepo.save(course);
     }
-
 }
