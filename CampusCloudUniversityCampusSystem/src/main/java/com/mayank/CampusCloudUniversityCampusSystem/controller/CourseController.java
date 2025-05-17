@@ -18,8 +18,8 @@ public class CourseController {
     @Autowired
     private CourseService service;
 
-    @PostMapping("/enrollStudents")
-    public  ResponseEntity <?> enrollStudents(@RequestBody EnrollmentRequest request){
+    @PostMapping("/addCourse")
+    public  ResponseEntity <?> addCourse(@RequestBody EnrollmentRequest request){
 
 
         try {

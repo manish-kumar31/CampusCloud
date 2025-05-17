@@ -1,19 +1,18 @@
 package com.mayank.CampusCloudUniversityCampusSystem.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.boot.registry.selector.StrategyRegistration;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Component
 @Data
 
 public class Course {
@@ -25,6 +24,8 @@ public class Course {
     private String courseName;
     private String courseCode;
     private int credits;
-    
+
+    @OneToMany(mappedBy =  "course", cascade =  CascadeType.ALL)
+    private List<CourseEnrollment> enrollments = new ArrayList<>();
 
 }

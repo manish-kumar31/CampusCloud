@@ -1,9 +1,6 @@
 package com.mayank.CampusCloudUniversityCampusSystem.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,13 +9,14 @@ import jakarta.validation.constraints.Email;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Component
 
 public class Student {
 
@@ -61,5 +59,6 @@ public class Student {
     @Column (nullable = true,updatable = true)
     private byte[] stuImage;
 
-
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<CourseEnrollment> enrollments = new ArrayList<>();
 }
