@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import axios from 'axios';
-import { TeachersContainer, Content, TeachersContent, TeachersHeader, TeacherList, TeacherItem, AddTeacherForm, AddTeacherInput, 
+import { TeachersContainer, Content, TeachersContent, TeachersHeader, AddTeacherForm, AddTeacherInput, 
   AddTeacherButton } from '../../styles/TeachersStyles';
 
 const TeacherSection = () => {

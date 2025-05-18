@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,24 +28,31 @@ public class Student {
     private String branch;
     private int semester;
     private int year;
+    @Column(nullable = true)
     private String enrollmentCode;
+    @Column(nullable = true)
     private boolean enrollmentCompleted;
 
     @Column(nullable = true)
     private String rollNo;
 
-
+    @Column(nullable = true)
     private LocalDate dob;
 
     private Long contactNo;
 
     private String address;
     private String gender;
+    @Column(nullable = true)
     private String nationality;
+    @Column(nullable = true)
     private String bloodGroup;
 
+    @Column(nullable = true)
     private Long parentContactNo;
+    @Column(nullable = true)
     private String parentName;
+    @Column(nullable = true)
     private String parentOccupation;
 
     @Email
@@ -59,6 +65,7 @@ public class Student {
     @Column (nullable = true,updatable = true)
     private byte[] stuImage;
 
+    @Column(nullable = true)
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<CourseEnrollment> enrollments = new ArrayList<>();
 }

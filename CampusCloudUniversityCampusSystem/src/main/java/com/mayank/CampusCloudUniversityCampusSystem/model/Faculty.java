@@ -1,33 +1,38 @@
-package com.mayank.CampusCloudUniversityCampusSystem.model;
+    package com.mayank.CampusCloudUniversityCampusSystem.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+    import jakarta.persistence.*;
+    import jakarta.validation.constraints.Email;
+    import lombok.*;
 
-@Data
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
+    @Data
+    @Entity
+    @NoArgsConstructor
+    @AllArgsConstructor
 
-public class Faculty {
+    public class Faculty {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+        private String name;
 
-    @Column(nullable = true)
-    private String univId;
+        @Column(nullable = true)
+        private String univId;
 
-    private String department;
-    private String emailId;
-    private String dob;
-    private long contactNo;
-    private String address;
-    private String gender;
-    private String nationality;
-    private String bloodGroup;
+        private String department;
+        @Email
+        private String emailId;
+        private String dob;
+        private long contactNo;
+        private String address;
+        private String gender;
+        @Column(nullable = true)
+        private String nationality;
+        @Column(nullable = true)
+        private String bloodGroup;
 
-    @Lob
-    private byte[] image;
+        @Lob
+        @Column(nullable = true)
+        private byte[] image;
 
-}
+    }

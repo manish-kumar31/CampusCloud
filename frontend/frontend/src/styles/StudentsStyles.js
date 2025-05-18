@@ -1,53 +1,177 @@
-// StudentsStyles.js
 import styled from 'styled-components';
 
 export const StudentsContainer = styled.div`
   display: flex;
- 
+  min-height: 100vh;
+  background-color: #f0f2f5;
 `;
+
+export const FormSelect = styled.select`
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+
+  &:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+`;
+
 
 export const Content = styled.div`
   flex: 1;
+  padding: 24px;
+  margin-left: 250px;
+  background-color: #f5f7fa;
+  overflow-y: auto;
 `;
 
 export const StudentsContent = styled.div`
-  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
-export const StudentsHeader = styled.h2`
-  font-size: 24px;
-  margin-bottom: 20px;
-`;
-
-export const StudentList = styled.ul`
-  list-style: none;
-  padding: 0;
-`;
-
-export const StudentItem = styled.li`
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 10px 20px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+export const StudentsHeader = styled.h1`
+  font-size: 28px;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eaecef;
 `;
 
 export const AddStudentForm = styled.form`
-  margin-bottom: 20px;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+`;
+
+export const FormSection = styled.div`
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+
+  h3 {
+    color: #2c3e50;
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+`;
+
+export const FormRow = styled.div`
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+
+  & > div {
+    flex: 1;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+  }
 `;
 
 export const AddStudentInput = styled.input`
-  padding: 8px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
 `;
 
 export const AddStudentButton = styled.button`
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: #fff;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #2980b9;
+  }
+`;
+
+export const FileUploadContainer = styled.div`
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+
+  input[type="file"] {
+    margin-bottom: 15px;
+    width: 100%;
+  }
+
+  p {
+    color: #6c757d;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+`;
+
+export const StudentList = styled.div`
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+`;
+
+export const StudentItem = styled.div`
+  padding: 15px;
+  border: 1px solid #eaecef;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  transition: box-shadow 0.3s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  strong {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+`;
+
+export const ButtonGroup = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+`;
+
+export const ActionButton = styled.button`
+  padding: 10px 20px;
   border: none;
   border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
+  background-color: ${({ active }) => (active ? '#3498db' : '#e9ecef')};
+  color: ${({ active }) => (active ? 'white' : '#495057')};
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: ${({ active }) => (active ? '#2980b9' : '#dee2e6')};
+  }
 `;
