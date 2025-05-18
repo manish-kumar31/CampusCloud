@@ -2,6 +2,7 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.CourseRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.service.CourseService;
 import org.apache.coyote.Response;
@@ -10,8 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/course")
 
 public class CourseController {
 
@@ -29,5 +31,6 @@ public class CourseController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 }

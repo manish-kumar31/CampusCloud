@@ -3,7 +3,6 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AdminService;
-import com.mayank.CampusCloudUniversityCampusSystem.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

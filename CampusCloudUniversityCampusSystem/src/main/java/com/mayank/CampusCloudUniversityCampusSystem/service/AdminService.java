@@ -105,7 +105,7 @@ public class AdminService {
         String firstName = nameParts[0];
 
         return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit)
-                + "@myuniv.edu";
+                + "@stu.edu";
 
     }
 
@@ -120,7 +120,7 @@ public class AdminService {
         String firstName = nameParts[1];
 
         return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit)
-                + "@myuniv.edu";
+                + "@univ.edu";
 
     }
 
