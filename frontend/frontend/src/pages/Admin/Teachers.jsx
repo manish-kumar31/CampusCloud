@@ -20,24 +20,24 @@ const Teachers = () => {
       <Sidebar />
       <Content>
         <TeachersContent>
-          <TeachersHeader>Teachers</TeachersHeader>
+          <TeachersHeader>Faculty</TeachersHeader>
           <AddTeacherForm >
             <AddTeacherInput
               type="text"
-              placeholder="Enter teacher name"
+              placeholder="Name"
     
             />
             <AddTeacherInput
               type="email"
-              placeholder="Enter teacher email"
+              placeholder="Mail"
             
             />
             <AddTeacherInput
               type="text"
-              placeholder="Enter teacher subject"
+              placeholder="Subject"
              
             />
-            <AddTeacherButton type="submit">Add Teacher</AddTeacherButton>
+            <AddTeacherButton type="submit">Add Faculty</AddTeacherButton>
           </AddTeacherForm>
           <TeacherList>
            

@@ -35,15 +35,15 @@ const Classes = () => {
       <Sidebar />
       <Content>
         <ClassesContent>
-          <ClassesHeader>Classes</ClassesHeader>
+          <ClassesHeader>Sections</ClassesHeader>
           <AddClassForm onSubmit={handleAddClass}>
             <AddClassInput
               type="text"
-              placeholder="Enter class name"
+              placeholder="Section"
               value={newClassName}
               onChange={(e) => setNewClassName(e.target.value)}
             />
-            <AddClassButton type="submit">Add Class</AddClassButton>
+            <AddClassButton type="submit">Add Section</AddClassButton>
           </AddClassForm>
           <ClassList>
             {/* Ensure that classes is an array before mapping over it */}

@@ -51,19 +51,19 @@ const Students = () => {
           <AddStudentForm onSubmit={handleAddStudent}>
             <AddStudentInput
               type="text"
-              placeholder="Enter student name"
+              placeholder="Student Name"
               value={newStudentName}
               onChange={(e) => setNewStudentName(e.target.value)}
             />
             <AddStudentInput
               type="text"
-              placeholder="Enter registration number"
+              placeholder="University ID"
               value={newRegistrationNumber}
               onChange={(e) => setNewRegistrationNumber(e.target.value)}
             />
             <AddStudentInput
               type="text"
-              placeholder="Enter grade"
+              placeholder="Section"
               value={newGrade}
               onChange={(e) => setNewGrade(e.target.value)}
             />
@@ -74,8 +74,8 @@ const Students = () => {
             {Array.isArray(students) && students.map((student, index) => (
               <StudentItem key={index}>
                 <strong>Name:</strong> {student.name} <br />
-                <strong>Registration Number:</strong> {student.registrationNumber} <br />
-                <strong>Grade:</strong> {student.grade}
+                <strong>University ID:</strong> {student.registrationNumber} <br />
+                <strong>Section:</strong> {student.grade}
               </StudentItem>
             ))}
           </StudentList>
