@@ -1,7 +1,6 @@
-// AdminDashboard.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
-import EventCalendar from './EventCalendar'; // make sure the file is named correctly
+import EventCalendar from './EventCalendar';
 import Announcement from './Announcement';
 import Performance from './Performance';
 
@@ -18,10 +17,15 @@ import {
   CardContent,
 } from '../../styles/DashboardStyles';
 
+import axios from 'axios';
+
 const AdminDashboard = () => {
   const [isOpen, setIsOpen] = useState(true);
+  const [studentCount, setStudentCount] = useState(0);
+  const [teacherCount, setTeacherCount] = useState(0);
+  const [classCount, setClassCount] = useState(0);
 
-  // ✅ Dummy data instead of API calls
+  // Dummy event and announcement data
   const events = [
     { title: 'Science Fair', date: '2025-04-25' },
     { title: 'Exam Week', date: '2025-05-01' },
@@ -38,6 +42,21 @@ const AdminDashboard = () => {
     { name: 'Aman', score: 76 },
   ];
 
+  // Fetch counts from backend
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/AdminDashboard/students/count')
+      .then(response => setStudentCount(response.data))
+      .catch(error => console.error('Error fetching student count:', error));
+
+    axios.get('http://localhost:8080/api/AdminDashboard/faculty/count')
+      .then(response => setTeacherCount(response.data))
+      .catch(error => console.error('Error fetching teacher count:', error));
+
+    axios.get('http://localhost:8080/api/AdminDashboard/subject/count')
+      .then(response => setClassCount(response.data))
+      .catch(error => console.error('Error fetching class count:', error));
+  }, []);
+
   return (
     <AdminDashboardContainer>
       <Sidebar />
@@ -48,15 +67,15 @@ const AdminDashboard = () => {
             <CardContainer>
               <Card>
                 <CardTitle>Total Students</CardTitle>
-                <CardContent>500</CardContent>
+                <CardContent>{studentCount}</CardContent>
               </Card>
               <Card>
                 <CardTitle>Total Teachers</CardTitle>
-                <CardContent>50</CardContent>
+                <CardContent>{teacherCount}</CardContent>
               </Card>
               <Card>
                 <CardTitle>Total Classes</CardTitle>
-                <CardContent>30</CardContent>
+                <CardContent>{classCount}</CardContent>
               </Card>
             </CardContainer>
           </Section>

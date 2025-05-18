@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Sidebar from './Sidebar';
 import {
   ClassesContainer,
@@ -10,23 +11,66 @@ import {
   AddClassForm,
   AddClassInput,
   AddClassButton,
+  SubjectInfo,
 } from '../../styles/ClassesStyles';
 
-const Classes = () => {
-  // State to store the class name input and the list of classes
-  const [newClassName, setNewClassName] = useState('');
-  const [classes, setClasses] = useState([]);
+const Subjects = () => {
+  const [newSubject, setNewSubject] = useState({
+    subjectName: '',
+    subjectCode: '',
+    credits: 0
+  });
+  const [subjects, setSubjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Handler for adding a new class
-  const handleAddClass = (e) => {
+  // Fetch subjects on component mount
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('http://localhost:8080/api/subject');
+        setSubjects(response.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewSubject(prev => ({
+      ...prev,
+      [name]: name === 'credits' ? parseInt(value) || 0 : value
+    }));
+  };
+
+  // Handler for adding a new subject
+  const handleAddSubject = async (e) => {
     e.preventDefault();
 
-    if (newClassName.trim()) {
-      setClasses((prevClasses) => [
-        ...prevClasses,
-        { name: newClassName }, // Add the new class to the list
-      ]);
-      setNewClassName(''); // Clear the input field
+    if (!newSubject.subjectName.trim() || !newSubject.subjectCode.trim()) {
+      setError('Subject name and code are required');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post('http://localhost:8080/api/subject/addSubject', newSubject);
+      setSubjects([...subjects, response.data]);
+      setNewSubject({
+        subjectName: '',
+        subjectCode: '',
+        credits: 0
+      });
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -35,26 +79,59 @@ const Classes = () => {
       <Sidebar />
       <Content>
         <ClassesContent>
-          <ClassesHeader>Sections</ClassesHeader>
-          <AddClassForm onSubmit={handleAddClass}>
+          <ClassesHeader>Subjects</ClassesHeader>
+          {error && <div className="error-message">{error}</div>}
+          <AddClassForm onSubmit={handleAddSubject}>
             <AddClassInput
               type="text"
-              placeholder="Section"
-              value={newClassName}
-              onChange={(e) => setNewClassName(e.target.value)}
+              name="subjectName"
+              placeholder="Subject Name"
+              value={newSubject.subjectName}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              required
             />
-            <AddClassButton type="submit">Add Section</AddClassButton>
+            <AddClassInput
+              type="text"
+              name="subjectCode"
+              placeholder="Subject Code"
+              value={newSubject.subjectCode}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              required
+            />
+            <AddClassInput
+              type="number"
+              name="credits"
+              placeholder="Credits"
+              value={newSubject.credits}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              min="0"
+            />
+            <AddClassButton type="submit" disabled={isLoading}>
+              {isLoading ? 'Adding...' : 'Add Subject'}
+            </AddClassButton>
           </AddClassForm>
-          <ClassList>
-            {/* Ensure that classes is an array before mapping over it */}
-            {Array.isArray(classes) && classes.map((classItem, index) => (
-              <ClassItem key={index}>{classItem.name}</ClassItem>
-            ))}
-          </ClassList>
+          {isLoading && !subjects.length ? (
+            <div>Loading subjects...</div>
+          ) : (
+            <ClassList>
+              {subjects.map((subject) => (
+                <ClassItem key={subject.id}>
+                  <SubjectInfo>
+                    <strong>{subject.subjectName}</strong>
+                    <div>Code: {subject.subjectCode}</div>
+                    <div>Credits: {subject.credits}</div>
+                  </SubjectInfo>
+                </ClassItem>
+              ))}
+            </ClassList>
+          )}
         </ClassesContent>
       </Content>
     </ClassesContainer>
   );
 };
 
-export default Classes;
+export default Subjects;

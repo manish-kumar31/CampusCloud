@@ -71,6 +71,16 @@ export const ClassHeader = styled.h1`
   margin-bottom: 20px;
 `;
 
+export const SubjectInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  
+  div {
+    font-size: 0.9rem;
+    color: #666;
+  }
+`;
 export const GradeHeader = styled.h3`
   font-size: 18px;
   margin-bottom: 10px;

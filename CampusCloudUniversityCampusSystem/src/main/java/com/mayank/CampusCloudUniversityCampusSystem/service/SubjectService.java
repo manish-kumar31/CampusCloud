@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Component
 public class SubjectService {
@@ -23,5 +25,9 @@ public class SubjectService {
         subject.setCredits(request.getCredits());
 
         return subjectRepo.save(subject);
+    }
+
+    public List<Subject> getAllSubjects() {
+        return subjectRepo.findAll();
     }
 }
