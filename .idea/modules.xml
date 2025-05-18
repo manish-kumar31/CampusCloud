@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/CampusCloudUniversityCampusSystem.iml" filepath="$PROJECT_DIR$/.idea/CampusCloudUniversityCampusSystem.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/CampusClodu.iml" filepath="$PROJECT_DIR$/.idea/CampusClodu.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CampusCloudUniversityCampusSystem/CampusCloudUniversityCampusSystem.iml" filepath="$PROJECT_DIR$/CampusCloudUniversityCampusSystem/CampusCloudUniversityCampusSystem.iml" />
     </modules>
   </component>
 </project>
