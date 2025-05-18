@@ -51,4 +51,4 @@ const Announcement = () => {
   );
 };
 
-export default Announcement;
+export default Announcement;  

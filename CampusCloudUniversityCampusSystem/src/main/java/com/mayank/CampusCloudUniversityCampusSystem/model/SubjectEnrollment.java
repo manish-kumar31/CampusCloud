@@ -3,20 +3,19 @@ package com.mayank.CampusCloudUniversityCampusSystem.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
 @Data
 @Entity
 
-public class CourseEnrollment {
+public class SubjectEnrollment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String courseCode;
+    private String subjectCode;
 
     @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
 
     @ManyToOne
     @JoinColumn(name = "student_id")

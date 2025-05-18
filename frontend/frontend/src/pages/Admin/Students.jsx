@@ -60,7 +60,7 @@ const Students = () => {
           emailId: studentData.emailId,
           univId: studentData.univId || null,
           // Only include fields that have values
-          ...(studentData.course && { course: studentData.course }),
+          ...(studentData.subject && { subject: studentData.subject }),
           ...(studentData.branch && { branch: studentData.branch }),
           ...(studentData.semester && { semester: studentData.semester }),
           ...(studentData.year && { year: studentData.year }),
@@ -198,8 +198,8 @@ const Students = () => {
                     <label>Course</label>
                     <AddStudentInput
                       type="text"
-                      name="course"
-                      value={studentData.course}
+                      name="subject"
+                      value={studentData.subject}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -313,7 +313,7 @@ const Students = () => {
                   <strong>Name:</strong> {student.name} <br />
                   <strong>Email:</strong> {student.emailId} <br />
                   <strong>University ID:</strong> {student.univId || 'N/A'} <br />
-                  <strong>Course:</strong> {student.course || 'N/A'} <br/>
+                  <strong>Course:</strong> {student.subject || 'N/A'} <br/>
                   <strong>Roll no:</strong> {student.rollNo || 'N/A'}
                 </StudentItem>
               ))

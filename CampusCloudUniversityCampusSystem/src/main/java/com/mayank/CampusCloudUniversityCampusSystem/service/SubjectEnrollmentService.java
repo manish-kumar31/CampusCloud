@@ -1,11 +1,11 @@
 package com.mayank.CampusCloudUniversityCampusSystem.service;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.Course;
-import com.mayank.CampusCloudUniversityCampusSystem.model.CourseEnrollment;
+import com.mayank.CampusCloudUniversityCampusSystem.model.Subject;
+import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
 import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.CourseEnrollmentRepo;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.CourseRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,41 +17,41 @@ import java.util.Optional;
 
 @Service
 @Component
-public class CourseEnrollmentService {
+public class SubjectEnrollmentService {
 
     @Autowired
     StudentRepo studentRepo;
     @Autowired
-    CourseRepo courseRepo;
+    SubjectRepo subjectRepo;
 
     @Autowired
-    CourseEnrollmentRepo courseEnrollmentRepo;
+    SubjectEnrollmentRepo subjectEnrollmentRepo;
 
 
     public Integer enrollStudents(EnrollmentRequest request) {
 
 
         List<Student> students = studentRepo.findAll();
-        Optional<Course> courseCode = courseRepo.findByCourseCode(request.getCourseCode());
+        Optional<Subject> courseCode = subjectRepo.findBySubjectCode(request.getSubjectCode());
 
         if (courseCode.isEmpty()){
-            throw new RuntimeException("Course not found with code : " + request.getCourseCode());
+            throw new RuntimeException("Course not found with code : " + request.getSubjectCode());
         }
 
-        Course course = courseCode.get();
+        Subject subject = courseCode.get();
 
-        List <CourseEnrollment> enrollments  = new ArrayList<>();
+        List <SubjectEnrollment> enrollments  = new ArrayList<>();
 
         for (Student student: students){
-            CourseEnrollment enrollment = new CourseEnrollment();
+            SubjectEnrollment enrollment = new SubjectEnrollment();
 
             enrollment.setStudent(student);
-            enrollment.setCourse (course);
-            enrollment.setCourseCode(course.getCourseCode());
+            enrollment.setSubject(subject);
+            enrollment.setSubjectCode(subject.getSubjectCode());
             enrollments.add(enrollment);
         }
 
-        courseEnrollmentRepo.saveAll(enrollments);
+        subjectEnrollmentRepo.saveAll(enrollments);
         return enrollments.size();
 
     }

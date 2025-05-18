@@ -18,8 +18,8 @@ public class EnrollmentRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String courseName;
-    private String courseCode;
+    private String subjectName;
+    private String subjectCode;
     private int credits;
 
 }

@@ -1,5 +1,8 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
+import com.mayank.CampusCloudUniversityCampusSystem.repository.AttendanceRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -7,10 +10,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class AttendanceController {
 
+    @Autowired
+    AttendanceRepo attendanceRepo;
+
+    @Autowired
+    StudentRepo studentRepo;
+
 
 //    @PostMapping ("/markAttendance")
-//    public ResponseEntity<String> markAttendance( ) {
+//    public ResponseEntity<?> markAttendance (){
 //
-//
-//    return
+//    }
 }

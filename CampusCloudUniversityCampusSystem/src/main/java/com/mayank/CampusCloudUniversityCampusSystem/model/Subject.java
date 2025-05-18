@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.boot.registry.selector.StrategyRegistration;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +13,17 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 
-public class Course {
+public class Subject {
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String courseName;
-    private String courseCode;
+    private String subjectName;
+    private String subjectCode;
     private int credits;
 
-    @OneToMany(mappedBy =  "course", cascade =  CascadeType.ALL)
-    private List<CourseEnrollment> enrollments = new ArrayList<>();
+    @OneToMany(mappedBy =  "subject", cascade =  CascadeType.ALL)
+    private List<SubjectEnrollment> enrollments = new ArrayList<>();
 
 }

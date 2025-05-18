@@ -1,11 +1,7 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
-import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.CourseRepo;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
-import com.mayank.CampusCloudUniversityCampusSystem.service.CourseService;
-import org.apache.coyote.Response;
+import com.mayank.CampusCloudUniversityCampusSystem.service.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/course")
 
-public class CourseController {
+public class SubjectController {
 
     @Autowired
-    private CourseService service;
+    private SubjectService service;
 
     @PostMapping("/addCourse")
     public  ResponseEntity <?> addCourse(@RequestBody EnrollmentRequest request){

@@ -1,6 +1,6 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
-import com.mayank.CampusCloudUniversityCampusSystem.repository.CourseRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminDashboardController {
 
     @Autowired
-    StudentRepo studentRepo;
+    private StudentRepo studentRepo;
 
     @Autowired
     private FacultyRepo facultyRepo;
 
     @Autowired
-    CourseRepo courseRepo;
+    SubjectRepo subjectRepo;
 
     @GetMapping("/students/count")
     public ResponseEntity<Long> getStudentCount() {
@@ -36,9 +36,9 @@ public class AdminDashboardController {
     }
 
 
-    @GetMapping("/course/count")
+    @GetMapping("/subject/count")
     public ResponseEntity<Long> getClassCount() {
-        return ResponseEntity.ok(courseRepo.count());
+        return ResponseEntity.ok(subjectRepo.count());
     }
 
 
