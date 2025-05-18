@@ -1,31 +1,54 @@
-// AnnouncementSection.js
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import axios from 'axios';
 import {
   AnnouncementContainer,
-  SidebarContainer,
   Content,
-  AnnouncementHeader,
+  Title,
   AnnouncementList,
   AnnouncementItem,
-  AnnouncementTitle,
   AnnouncementContent,
-} from '../../styles/AnnouncementStyles'; 
+} from '../../styles/AnnouncementStyles';
 
-const AnnouncementSection = () => {
+const Announcement = () => {
+  const [latestAnnouncement, setLatestAnnouncement] = useState(null);
+
+  const fetchLatestAnnouncement = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/announcement');
+      setLatestAnnouncement(response.data);
+    } catch (error) {
+      console.error('Error fetching announcement:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLatestAnnouncement();
+  }, []);
+
   return (
     <AnnouncementContainer>
-      <SidebarContainer>
-        <Sidebar />
-      </SidebarContainer>
+      <Sidebar />
       <Content>
-        <AnnouncementHeader>Announcements</AnnouncementHeader>
+        <Title>Announcement</Title>
+
+        {/* Display Latest Announcement */}
+        <h2>Latest Announcement</h2>
         <AnnouncementList>
+          {latestAnnouncement ? (
+            <AnnouncementItem>
+              <AnnouncementContent>
+                <strong>{latestAnnouncement.title}</strong>
+                <p>{latestAnnouncement.message}</p>
+              </AnnouncementContent>
+            </AnnouncementItem>
+          ) : (
+            <p>No announcements yet.</p>
+          )}
         </AnnouncementList>
       </Content>
     </AnnouncementContainer>
   );
 };
 
-export default AnnouncementSection;
+export default Announcement;
