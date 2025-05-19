@@ -25,7 +25,7 @@ public class AuthController {
     private StudentRepo studentRepo;
 
     @Autowired
-    private FacultyRepo teacherRepo;
+    private FacultyRepo facultyRepo;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -35,7 +35,7 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
 
 
-        LocalDate dobInput = LocalDate.parse(loginRequest.getPassword());  // expects "YYYY-MM-DD"
+        LocalDate dobInput = LocalDate.parse(loginRequest.getPassword());  // "YYYY-MM-DD"
         String dobString = dobInput.toString();
         Student student = studentRepo.findByUnivId(loginRequest.getUsername());
         if (student != null && dobString.equals(student.getPassword())) {
@@ -48,8 +48,10 @@ public class AuthController {
         }
 
 
-        Faculty faculty = teacherRepo.findByUnivId(loginRequest.getUsername());
-        if (faculty != null && dobString.equals(student.getPassword())) {
+         dobInput = LocalDate.parse(loginRequest.getPassword());  // "YYYY-MM-DD"
+         dobString = dobInput.toString();
+         Faculty faculty= facultyRepo.findByUnivId(loginRequest.getUsername());
+        if (faculty != null && dobString.equals(faculty.getPassword())) {
             response.put("status", "success");
             response.put("role", "TEACHER");
             response.put("userId", faculty.getId());
