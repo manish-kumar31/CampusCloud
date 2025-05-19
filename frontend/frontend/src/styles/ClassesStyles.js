@@ -1,5 +1,5 @@
 // ClassesStyles.js
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const ClassesContainer = styled.div`
   display: flex;
@@ -57,7 +57,6 @@ export const AddClassButton = styled.button`
   cursor: pointer;
 `;
 
-
 export const ClassContainer = styled.div`
   display: flex;
 `;
@@ -70,12 +69,29 @@ export const ClassHeader = styled.h1`
   font-size: 24px;
   margin-bottom: 20px;
 `;
+export const FormRow = styled.div`
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+`;
 
+export const FormLabel = styled.label`
+  width: 120px;
+  font-weight: 500;
+`;
+
+export const FormSelect = styled.select`
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
+  max-width: 300px;
+`;
 export const SubjectInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  
+
   div {
     font-size: 0.9rem;
     color: #666;

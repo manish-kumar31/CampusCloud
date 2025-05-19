@@ -1,61 +1,46 @@
 package com.mayank.CampusCloudUniversityCampusSystem.service;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
+import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
+import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.Subject;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
-@Component
 public class SubjectEnrollmentService {
 
     @Autowired
-    StudentRepo studentRepo;
+    private SubjectEnrollmentRepo subjectRepo;
 
     @Autowired
-    SubjectEnrollmentRepo subjectRepo;
+    private StudentRepo studentRepo;
+
+    @Autowired
+    private FacultyRepo facultyRepo;
 
 
-    public Integer setEnrollments(SubjectEnrollment request) {
+    public SubjectEnrollment createEnrollmentWithAllStudents(EnrollmentRequest request) {
+
+        Faculty faculty = facultyRepo.findFacultyByUnivId(request.getUnivId()).orElseThrow();
 
 
-        List<Student> students = studentRepo.findAll();
+        List<Student> allStudents = studentRepo.findAll();
 
-        String subjectName = request.getSubjectName();
-        String subjectCode = request.getSubjectCode();
-        int subjectCredits = request.getCredits();
 
-        List <SubjectEnrollment> enrollments  = new ArrayList<>();
+        SubjectEnrollment enrollment = new SubjectEnrollment();
+        enrollment.setSubjectName(request.getSubjectName());
+        enrollment.setSubjectCode(request.getSubjectCode());
+        enrollment.setCredits(request.getCredits());
+        enrollment.setFaculty(faculty);
+        enrollment.setStudents(allStudents);
 
-        for (Student student: students){
-            SubjectEnrollment enrollment = new SubjectEnrollment();
-
-            enrollment.setSubjectName(subjectName);
-            enrollment.setSubjectCode(subjectCode);
-            enrollment.setCredits(subjectCredits);
-            enrollment.setStudents(students);
-            enrollment.setFaculty(request.getFaculty());
-        }
-
-        subjectRepo.saveAll(enrollments);
-        return enrollments.size();
-
+        return subjectRepo.save(enrollment);
     }
 
-
-    public Optional<SubjectEnrollment> getEnrollments(String subjectCode) {
-
-     return  subjectRepo.findBySubjectCode(subjectCode);
-
-        
-
-    }
 }

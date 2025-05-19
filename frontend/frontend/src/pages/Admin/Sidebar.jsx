@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Link } from 'react-router-dom'; 
-import { BsGraphUp, BsPeople, BsPerson, BsFileText, BsBook, BsGraphDown, BsCalendar, BsGear, BsChatDots, BsCalendarEvent } from 'react-icons/bs';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+import {
+  BsGraphUp,
+  BsPeople,
+  BsPerson,
+  BsFileText,
+  BsBook,
+  BsGraphDown,
+  BsCalendar,
+  BsGear,
+  BsChatDots,
+  BsCalendarEvent,
+} from "react-icons/bs";
 import bg1 from "../../assets/bg1.png";
 
 const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
-  left: ${({ isOpen }) => (isOpen ? '0' : '-250px')};
+  left: ${({ isOpen }) => (isOpen ? "0" : "-250px")};
   width: 250px;
   height: 100%;
   background-color: rgb(34, 36, 141);
@@ -61,7 +72,7 @@ const Logo = styled.img`
 const ToggleButton = styled.div`
   position: fixed;
   top: 20px;
-  left: ${({ isOpen }) => (isOpen ? '250px' : '0')};
+  left: ${({ isOpen }) => (isOpen ? "250px" : "0")};
   width: 30px;
   height: 30px;
   background-color: #34495e;
@@ -77,7 +88,7 @@ const ToggleButton = styled.div`
 const ToggleIcon = styled.span`
   color: white;
   font-size: 20px;
-  transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform: ${({ isOpen }) => (isOpen ? "rotate(180deg)" : "rotate(0deg)")};
   transition: transform 0.3s ease;
 `;
 
@@ -87,29 +98,36 @@ const Sidebar = () => {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
-   
+
   return (
     <>
       <SidebarContainer isOpen={isOpen}>
         <SidebarHeader>
-        <Logo src={bg1} alt="Logo" />
-
+          <Logo src={bg1} alt="Logo" />
         </SidebarHeader>
         <SidebarNav>
           <SidebarNavItem>
-            <SidebarIcon><BsGraphUp /></SidebarIcon>
+            <SidebarIcon>
+              <BsGraphUp />
+            </SidebarIcon>
             <StyledLink to="/admin/dashboard">Dashboard</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsPeople /></SidebarIcon>
-            <StyledLink to="/admin/classes">Subjeccts</StyledLink>
+            <SidebarIcon>
+              <BsPeople />
+            </SidebarIcon>
+            <StyledLink to="/admin/classes">Subjects</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsPeople /></SidebarIcon>
+            <SidebarIcon>
+              <BsPeople />
+            </SidebarIcon>
             <StyledLink to="/admin/students">Students</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsPerson /></SidebarIcon>
+            <SidebarIcon>
+              <BsPerson />
+            </SidebarIcon>
             <StyledLink to="/admin/teachers">Teachers</StyledLink>
           </SidebarNavItem>
           {/* <SidebarNavItem>
@@ -117,7 +135,9 @@ const Sidebar = () => {
             <StyledLink to="/admin/assignments">Assignments</StyledLink>
           </SidebarNavItem> */}
           <SidebarNavItem>
-            <SidebarIcon><BsBook /></SidebarIcon>
+            <SidebarIcon>
+              <BsBook />
+            </SidebarIcon>
             <StyledLink to="/admin/exams">Exams</StyledLink>
           </SidebarNavItem>
           {/* <SidebarNavItem>
@@ -125,23 +145,33 @@ const Sidebar = () => {
             <StyledLink to="/admin/performance">Performance</StyledLink>
           </SidebarNavItem> */}
           <SidebarNavItem>
-            <SidebarIcon><BsCalendar /></SidebarIcon>
+            <SidebarIcon>
+              <BsCalendar />
+            </SidebarIcon>
             <StyledLink to="/admin/attendance">Attendance</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsBook /></SidebarIcon>
+            <SidebarIcon>
+              <BsBook />
+            </SidebarIcon>
             <StyledLink to="/admin/library">Library</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsChatDots /></SidebarIcon>
+            <SidebarIcon>
+              <BsChatDots />
+            </SidebarIcon>
             <StyledLink to="/admin/communication">Announcement</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsCalendarEvent /></SidebarIcon>
+            <SidebarIcon>
+              <BsCalendarEvent />
+            </SidebarIcon>
             <StyledLink to="/admin/events">Events & Calendar</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
-            <SidebarIcon><BsGear /></SidebarIcon>
+            <SidebarIcon>
+              <BsGear />
+            </SidebarIcon>
             <StyledLink to="/admin/settings">Settings & Profile</StyledLink>
           </SidebarNavItem>
         </SidebarNav>

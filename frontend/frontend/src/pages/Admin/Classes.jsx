@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Sidebar from './Sidebar';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Sidebar from "./Sidebar";
 import {
   ClassesContainer,
   Content,
@@ -12,61 +12,76 @@ import {
   AddClassInput,
   AddClassButton,
   SubjectInfo,
-} from '../../styles/ClassesStyles';
+  FormRow,
+  FormLabel,
+} from "../../styles/ClassesStyles";
 
-const Subjects = () => {
-  const [newSubject, setNewSubject] = useState({
-    subjectName: '',
-    subjectCode: '',
-    credits: 0
+const SubjectEnrollment = () => {
+  const [enrollmentData, setEnrollmentData] = useState({
+    subjectName: "",
+    subjectCode: "",
+    credits: 0,
+    univId: "",
   });
-  const [subjects, setSubjects] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // Fetch subjects on component mount
+  // Fetch existing enrollments on component mount
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchEnrollments = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:8080/api/subject');
-        setSubjects(response.data);
+        const response = await axios.get(
+          "http://localhost:8080/api/enrollments"
+        );
+        setEnrollments(response.data);
       } catch (err) {
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchSubjects();
+    fetchEnrollments();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewSubject(prev => ({
+    setEnrollmentData((prev) => ({
       ...prev,
-      [name]: name === 'credits' ? parseInt(value) || 0 : value
+      [name]: name === "credits" ? parseInt(value) || 0 : value,
     }));
   };
 
-  // Handler for adding a new subject
-  const handleAddSubject = async (e) => {
+  const handleEnrollAll = async (e) => {
     e.preventDefault();
 
-    if (!newSubject.subjectName.trim() || !newSubject.subjectCode.trim()) {
-      setError('Subject name and code are required');
+    if (
+      !enrollmentData.subjectName.trim() ||
+      !enrollmentData.subjectCode.trim() ||
+      !enrollmentData.univId.trim()
+    ) {
+      setError("All fields are required");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:8080/api/subject/addSubject', newSubject);
-      setSubjects([...subjects, response.data]);
-      setNewSubject({
-        subjectName: '',
-        subjectCode: '',
-        credits: 0
+      const response = await axios.post(
+        "http://localhost:8080/api/enrollments/create-for-all",
+        enrollmentData
+      );
+      setEnrollments([...enrollments, response.data]);
+      setEnrollmentData({
+        subjectName: "",
+        subjectCode: "",
+        credits: 0,
+        univId: "",
       });
       setError(null);
+      setSuccess("Enrollment created successfully!");
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -79,50 +94,83 @@ const Subjects = () => {
       <Sidebar />
       <Content>
         <ClassesContent>
-          <ClassesHeader>Subjects</ClassesHeader>
+          <ClassesHeader>Subject Enrollment</ClassesHeader>
           {error && <div className="error-message">{error}</div>}
-          <AddClassForm onSubmit={handleAddSubject}>
-            <AddClassInput
-              type="text"
-              name="subjectName"
-              placeholder="Subject Name"
-              value={newSubject.subjectName}
-              onChange={handleInputChange}
-              disabled={isLoading}
-              required
-            />
-            <AddClassInput
-              type="text"
-              name="subjectCode"
-              placeholder="Subject Code"
-              value={newSubject.subjectCode}
-              onChange={handleInputChange}
-              disabled={isLoading}
-              required
-            />
-            <AddClassInput
-              type="number"
-              name="credits"
-              placeholder="Credits"
-              value={newSubject.credits}
-              onChange={handleInputChange}
-              disabled={isLoading}
-              min="0"
-            />
+          {success && <div className="success-message">{success}</div>}
+
+          <AddClassForm onSubmit={handleEnrollAll}>
+            <FormRow>
+              <FormLabel>Subject Name:</FormLabel>
+              <AddClassInput
+                type="text"
+                name="subjectName"
+                placeholder="Subject Name"
+                value={enrollmentData.subjectName}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
+            </FormRow>
+
+            <FormRow>
+              <FormLabel>Subject Code:</FormLabel>
+              <AddClassInput
+                type="text"
+                name="subjectCode"
+                placeholder="Subject Code"
+                value={enrollmentData.subjectCode}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
+            </FormRow>
+
+            <FormRow>
+              <FormLabel>Credits:</FormLabel>
+              <AddClassInput
+                type="number"
+                name="credits"
+                placeholder="Credits"
+                value={enrollmentData.credits}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                min="0"
+              />
+            </FormRow>
+
+            <FormRow>
+              <FormLabel>University ID:</FormLabel>
+              <AddClassInput
+                type="text"
+                name="univId"
+                placeholder="Faculty University ID"
+                value={enrollmentData.univId}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
+            </FormRow>
+
             <AddClassButton type="submit" disabled={isLoading}>
-              {isLoading ? 'Adding...' : 'Add Subject'}
+              {isLoading ? "Processing..." : "Enroll All Students"}
             </AddClassButton>
           </AddClassForm>
-          {isLoading && !subjects.length ? (
-            <div>Loading subjects...</div>
+
+          {isLoading && !enrollments.length ? (
+            <div>Loading enrollments...</div>
           ) : (
             <ClassList>
-              {subjects.map((subject) => (
-                <ClassItem key={subject.id}>
+              {enrollments.map((enrollment) => (
+                <ClassItem key={enrollment.id}>
                   <SubjectInfo>
-                    <strong>{subject.subjectName}</strong>
-                    <div>Code: {subject.subjectCode}</div>
-                    <div>Credits: {subject.credits}</div>
+                    <strong>
+                      {enrollment.subjectName} ({enrollment.subjectCode})
+                    </strong>
+                    <div>Credits: {enrollment.credits}</div>
+                    <div>Faculty ID: {enrollment.univId}</div>
+                    <div>
+                      Students Enrolled: {enrollment.students?.length || 0}
+                    </div>
                   </SubjectInfo>
                 </ClassItem>
               ))}
@@ -134,4 +182,4 @@ const Subjects = () => {
   );
 };
 
-export default Subjects;
+export default SubjectEnrollment;

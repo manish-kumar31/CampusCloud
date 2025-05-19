@@ -1,46 +1,27 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
+import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
 import com.mayank.CampusCloudUniversityCampusSystem.service.SubjectEnrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.Subject;
-import java.util.List;
-import java.util.Optional;
-
 @RestController
-@RequestMapping("/api")
-@CrossOrigin
+@RequestMapping("/api/enrollments")
 public class SubjectEnrollmentController {
 
     @Autowired
-    private SubjectEnrollmentService service;
+    private SubjectEnrollmentService enrollmentService;
 
 
-    @PostMapping("/setEnrollments")
-    public ResponseEntity<?> setEnrollments (@RequestBody SubjectEnrollment request){
-
+    @PostMapping("/create-for-all")
+    public ResponseEntity<?> createForAllStudents(@RequestBody EnrollmentRequest request) {
         try {
-            return new ResponseEntity<>(service.setEnrollments(request), HttpStatus.OK);
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.ok(enrollmentService.createEnrollmentWithAllStudents(request));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @GetMapping
-    public ResponseEntity<?> getEnrollments(String subjectCode) {
-        try {
-            Optional<SubjectEnrollment> subjects = service.getEnrollments(subjectCode);
-            return new ResponseEntity<>(subjects, HttpStatus.OK);
-        }
-        catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
 
 
 }
