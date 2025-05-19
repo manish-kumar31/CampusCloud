@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import EventCalendar from './EventCalendar';
-import Announcement from './Announcement';
-import Performance from './Performance';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import EventCalendar from "./EventCalendar";
+import Announcement from "./Announcement";
+import Performance from "./Performance";
 
 import {
   AdminDashboardContainer,
@@ -15,9 +15,9 @@ import {
   Card,
   CardTitle,
   CardContent,
-} from '../../styles/DashboardStyles';
+} from "../../styles/DashboardStyles";
 
-import axios from 'axios';
+import axios from "axios";
 
 const AdminDashboard = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -27,34 +27,32 @@ const AdminDashboard = () => {
 
   // Dummy event and announcement data
   const events = [
-    { title: 'Science Fair', date: '2025-04-25' },
-    { title: 'Exam Week', date: '2025-05-01' },
+    { title: "Science Fair", date: "2025-04-25" },
+    { title: "Exam Week", date: "2025-05-01" },
   ];
 
   const announcements = [
-    { id: 1, text: 'All students must submit their assignments by Friday.' },
-    { id: 2, text: 'Teacher’s workshop this weekend.' },
+    { id: 1, text: "All students must submit their assignments by Friday." },
+    { id: 2, text: "Teacher’s workshop this weekend." },
   ];
 
   const studentPerformance = [
-    { name: 'Ankit', score: 92 },
-    { name: 'Riya', score: 88 },
-    { name: 'Aman', score: 76 },
+    { name: "Ankit", score: 92 },
+    { name: "Riya", score: 88 },
+    { name: "Aman", score: 76 },
   ];
 
   // Fetch counts from backend
   useEffect(() => {
-    axios.get('http://localhost:8080/api/AdminDashboard/students/count')
-      .then(response => setStudentCount(response.data))
-      .catch(error => console.error('Error fetching student count:', error));
+    axios
+      .get("http://localhost:8080/api/AdminDashboard/students/count")
+      .then((response) => setStudentCount(response.data))
+      .catch((error) => console.error("Error fetching student count:", error));
 
-    axios.get('http://localhost:8080/api/AdminDashboard/faculty/count')
-      .then(response => setTeacherCount(response.data))
-      .catch(error => console.error('Error fetching teacher count:', error));
-
-    axios.get('http://localhost:8080/api/AdminDashboard/subject/count')
-      .then(response => setClassCount(response.data))
-      .catch(error => console.error('Error fetching class count:', error));
+    axios
+      .get("http://localhost:8080/api/AdminDashboard/faculty/count")
+      .then((response) => setTeacherCount(response.data))
+      .catch((error) => console.error("Error fetching teacher count:", error));
   }, []);
 
   return (

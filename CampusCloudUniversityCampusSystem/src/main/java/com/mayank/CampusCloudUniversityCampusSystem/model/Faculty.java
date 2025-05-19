@@ -35,4 +35,7 @@
         @Column(nullable = true)
         private byte[] image;
 
+        @OneToOne (mappedBy = "faculty")
+        private SubjectEnrollment request;
+
     }

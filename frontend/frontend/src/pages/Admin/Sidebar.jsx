@@ -102,7 +102,7 @@ const Sidebar = () => {
           </SidebarNavItem>
           <SidebarNavItem>
             <SidebarIcon><BsPeople /></SidebarIcon>
-            <StyledLink to="/admin/classes">Sections</StyledLink>
+            <StyledLink to="/admin/classes">Subjeccts</StyledLink>
           </SidebarNavItem>
           <SidebarNavItem>
             <SidebarIcon><BsPeople /></SidebarIcon>

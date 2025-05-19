@@ -65,7 +65,8 @@ public class Student {
     @Column (nullable = true,updatable = true)
     private byte[] stuImage;
 
-    @Column(nullable = true)
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    private List<SubjectEnrollment> enrollments = new ArrayList<>();
+    @ManyToMany(mappedBy = "students")
+    private List <SubjectEnrollment> requests;
+
+
 }

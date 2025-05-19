@@ -1,16 +1,14 @@
 package com.mayank.CampusCloudUniversityCampusSystem.service;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.Subject;
 import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
-import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,38 +19,43 @@ public class SubjectEnrollmentService {
 
     @Autowired
     StudentRepo studentRepo;
-    @Autowired
-    SubjectRepo subjectRepo;
 
     @Autowired
-    SubjectEnrollmentRepo subjectEnrollmentRepo;
+    SubjectEnrollmentRepo subjectRepo;
 
 
-    public Integer enrollStudents(EnrollmentRequest request) {
+    public Integer setEnrollments(SubjectEnrollment request) {
 
 
         List<Student> students = studentRepo.findAll();
-        Optional<Subject> courseCode = subjectRepo.findBySubjectCode(request.getSubjectCode());
 
-        if (courseCode.isEmpty()){
-            throw new RuntimeException("Course not found with code : " + request.getSubjectCode());
-        }
-
-        Subject subject = courseCode.get();
+        String subjectName = request.getSubjectName();
+        String subjectCode = request.getSubjectCode();
+        int subjectCredits = request.getCredits();
 
         List <SubjectEnrollment> enrollments  = new ArrayList<>();
 
         for (Student student: students){
             SubjectEnrollment enrollment = new SubjectEnrollment();
 
-            enrollment.setStudent(student);
-            enrollment.setSubject(subject);
-            enrollment.setSubjectCode(subject.getSubjectCode());
-            enrollments.add(enrollment);
+            enrollment.setSubjectName(subjectName);
+            enrollment.setSubjectCode(subjectCode);
+            enrollment.setCredits(subjectCredits);
+            enrollment.setStudents(students);
+            enrollment.setFaculty(request.getFaculty());
         }
 
-        subjectEnrollmentRepo.saveAll(enrollments);
+        subjectRepo.saveAll(enrollments);
         return enrollments.size();
+
+    }
+
+
+    public Optional<SubjectEnrollment> getEnrollments(String subjectCode) {
+
+     return  subjectRepo.findBySubjectCode(subjectCode);
+
+        
 
     }
 }

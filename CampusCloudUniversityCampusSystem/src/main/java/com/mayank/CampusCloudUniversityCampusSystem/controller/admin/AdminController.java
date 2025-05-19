@@ -1,4 +1,4 @@
-package com.mayank.CampusCloudUniversityCampusSystem.controller;
+package com.mayank.CampusCloudUniversityCampusSystem.controller.admin;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
