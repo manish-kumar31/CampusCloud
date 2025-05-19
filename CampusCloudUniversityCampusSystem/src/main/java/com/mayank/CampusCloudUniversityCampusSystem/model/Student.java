@@ -68,5 +68,8 @@ public class Student {
     @ManyToMany(mappedBy = "students")
     private List <SubjectEnrollment> requests;
 
+    @Column(nullable = true)
+    private String password;
+
 
 }

@@ -11,4 +11,7 @@ public interface FacultyRepo extends JpaRepository<Faculty,Long> {
 
     Optional<Faculty>  findFacultyByUnivId(String univId);
 
+    Faculty findByEmailId(String username);
+
+    Faculty findByUnivId(String univId);
 }

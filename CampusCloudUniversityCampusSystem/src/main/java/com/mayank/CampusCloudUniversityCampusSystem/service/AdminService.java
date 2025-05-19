@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -37,6 +38,8 @@ public class AdminService {
 
         for (Student stu : savedStudents){
             String rollNo = generateRollNo(stu.getYear(), stu.getBranch(), stu.getId());
+            String password = generatePassword(stu.getDob());
+            stu.setPassword(password);
             stu.setRollNo(rollNo);
         }
 
@@ -48,6 +51,10 @@ public class AdminService {
     private String generateRollNo(int year, String branch, Long id) {
 
         return String.valueOf(year) + branch + String.valueOf(id);
+    }
+
+    private String generatePassword(LocalDate dob){
+       return dob.toString();
     }
 
     public Set <Student> parseCsv (MultipartFile file) throws IOException {
@@ -134,6 +141,7 @@ public class AdminService {
         Student savedStudent =  studentRepo.save(student); // So that uniqueId is generated first before generating RollNo
         String rollNo = generateRollNo(savedStudent.getYear(), savedStudent.getBranch(), savedStudent.getId());
         savedStudent.setRollNo(rollNo);
+        savedStudent.setPassword(generatePassword(savedStudent.getDob()));
         savedStudent.setUnivId(generateUnivId(savedStudent.getName(),savedStudent.getContactNo()));
 
         return studentRepo.save(savedStudent);
@@ -145,6 +153,7 @@ public class AdminService {
     public Faculty uploadFacultyDetail(Faculty faculty) {
 
         Faculty savedFaculty =  facultyRepo.save(faculty);
+        savedFaculty.setPassword(generatePassword(savedFaculty.getDob()));
         savedFaculty.setUnivId(generateUnivIdFaculty(savedFaculty.getName(),savedFaculty.getContactNo()));
         return facultyRepo.save(savedFaculty);
 

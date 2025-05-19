@@ -4,6 +4,8 @@
     import jakarta.validation.constraints.Email;
     import lombok.*;
 
+    import java.time.LocalDate;
+
     @Data
     @Entity
     @NoArgsConstructor
@@ -22,7 +24,7 @@
         private String department;
         @Email
         private String emailId;
-        private String dob;
+        private LocalDate dob;
         private long contactNo;
         private String address;
         private String gender;
@@ -37,5 +39,8 @@
 
         @OneToOne (mappedBy = "faculty")
         private SubjectEnrollment request;
+
+        @Column(nullable = true)
+        private String password;
 
     }
