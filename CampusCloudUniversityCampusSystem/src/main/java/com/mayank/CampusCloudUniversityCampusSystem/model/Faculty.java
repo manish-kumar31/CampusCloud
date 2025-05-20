@@ -19,7 +19,7 @@
         private Long id;
         private String name;
 
-        @Column(nullable = true)
+        @Column(nullable = true,unique = true,name="univ_id")
         private String univId;
 
         private String department;

@@ -1,4 +1,4 @@
-package com.mayank.CampusCloudUniversityCampusSystem.controller.admin;
+package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 
-@CrossOrigin
+
 @RestController
 @RequestMapping("/api/students")
 public class StudentController {

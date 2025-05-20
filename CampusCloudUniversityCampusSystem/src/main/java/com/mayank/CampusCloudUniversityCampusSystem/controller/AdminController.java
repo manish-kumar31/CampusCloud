@@ -1,4 +1,4 @@
-package com.mayank.CampusCloudUniversityCampusSystem.controller.admin;
+package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
@@ -16,7 +16,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api")
 public class AdminController {
-
+    
     @Autowired
     private AdminService service;
     @PostMapping(value = "/uploadStudentDetails",consumes = "multipart/form-data")

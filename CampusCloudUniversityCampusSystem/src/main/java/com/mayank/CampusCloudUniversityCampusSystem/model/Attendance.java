@@ -27,6 +27,6 @@ public class Attendance {
 
     // Many-to-One with Faculty (who marked the attendance)
     @ManyToOne
-    @JoinColumn(name = "faculty_id", nullable = false)
+    @JoinColumn(name = "faculty_univ_id", nullable = false)
     private Faculty faculty;
 }

@@ -25,7 +25,7 @@ public class SubjectEnrollment {
     private int credits;
 
     @ManyToOne
-    @JoinColumn(name = "faculty_id")
+    @JoinColumn(name = "faculty_univ_id",referencedColumnName = "univ_id")
     private Faculty faculty;
 
     @ManyToMany

@@ -1,15 +1,19 @@
 package com.mayank.CampusCloudUniversityCampusSystem.service;
 
+import com.mayank.CampusCloudUniversityCampusSystem.model.Admin;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.model.StudentCsvRepresentation;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.AdminRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +29,15 @@ import java.util.stream.Collectors;
 
 @Service
 @Builder
+@Component
+
 public class AdminService {
+
+    @Autowired
+    AdminRepo adminRepo;
+
+    @Autowired
+    Admin admin;
 
     @Autowired
     private StudentRepo studentRepo;
@@ -259,6 +271,7 @@ public class AdminService {
         }
 
     }
+
 
 
 }

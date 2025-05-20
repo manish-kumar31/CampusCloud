@@ -25,15 +25,10 @@ const TeacherSignIn = () => {
       const response = await axios.post(
         "http://localhost:8080/api/auth/login",
         {
-          universityId: univId,
-          dob: dob,
-        },
-        {
-          withCredentials: true,
+          username: univId, // Changed from universityId to match backend
+          password: dob, // Changed from dob to match backend
         }
       );
-
-      console.log("Login response:", response);
 
       if (
         response.data.status === "success" &&
@@ -41,28 +36,20 @@ const TeacherSignIn = () => {
       ) {
         localStorage.setItem("teacherName", response.data.name);
         localStorage.setItem("teacherId", response.data.userId);
-        localStorage.setItem(
-          "facultyUnivId",
-          response.headers["x-faculty-univid"]
-        );
 
-        console.log("Redirect path:", response.data.redirect);
-        console.log(
-          "Stored facultyUnivId:",
-          response.headers["x-faculty-univid"]
-        );
+        // Only store if header exists
+        if (response.headers["x-faculty-univid"]) {
+          localStorage.setItem(
+            "facultyUnivId",
+            response.headers["x-faculty-univid"]
+          );
+        }
 
-        navigate("/teacher/dashboard");
+        navigate(response.data.redirect || "/teacher/dashboard");
       } else {
-        setError(response.data?.message || "Invalid role or credentials");
+        setError(response.data?.message || "Invalid credentials");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-      }
       setError(
         error.response?.data?.message || "Login failed. Please try again."
       );

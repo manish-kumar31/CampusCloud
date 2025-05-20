@@ -12,7 +12,6 @@ import {
   SchoolImage,
   Title,
   LoremTextContainer,
-  AdminRegisterLink,
 } from "../styles/styles";
 import bg from "../assets/bg.jpeg";
 import bg1 from "../assets/bg1.png";
@@ -45,9 +44,6 @@ const Home = () => {
               Welcome to Cloud Based Campus Management System
             </h2>
           </LoremTextContainer>
-          <AdminRegisterLink to="/admin/register">
-            Click Here To Register
-          </AdminRegisterLink>
         </SchoolInfo>
         <SchoolImage
           style={{
