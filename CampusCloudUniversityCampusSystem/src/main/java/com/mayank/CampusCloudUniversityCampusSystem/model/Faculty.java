@@ -5,6 +5,7 @@
     import lombok.*;
 
     import java.time.LocalDate;
+    import java.util.List;
 
     @Data
     @Entity
@@ -37,8 +38,12 @@
         @Column(nullable = true)
         private byte[] image;
 
-        @OneToOne (mappedBy = "faculty")
-        private SubjectEnrollment request;
+        @OneToMany(mappedBy = "faculty")
+        private List<SubjectEnrollment> taughtSubjects;
+
+        // One-to-Many with Attendance (attendance records marked by this faculty)
+        @OneToMany(mappedBy = "faculty")
+        private List<Attendance> markedAttendances;
 
         @Column(nullable = true)
         private String password;

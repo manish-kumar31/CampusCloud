@@ -1,36 +1,38 @@
 package com.mayank.CampusCloudUniversityCampusSystem.model;
 
+import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
+import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+// SubjectEnrollment.java
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Getter
-@Setter
-
 public class SubjectEnrollment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String subjectName;
     private String subjectCode;
     private int credits;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "enrollment_students",
-            joinColumns = @JoinColumn(name = "enrollment_id"),
-            inverseJoinColumns = @JoinColumn(name = "student_id"))
-    private List<Student> students = new ArrayList<>();
-
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "faculty_id")
     private Faculty faculty;
 
+    @ManyToMany
+    @JoinTable(
+            name = "subject_student_enrollment",
+            joinColumns = @JoinColumn(name = "subject_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private List<Student> enrolledStudents = new ArrayList<>();
 }

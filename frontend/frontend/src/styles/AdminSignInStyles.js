@@ -1,11 +1,16 @@
 // AdminSignInStyles.js
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const AdminSignInContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(45deg, rgb(159, 6, 83), rgb(166, 55, 11), #90EE90); 
+  background: linear-gradient(
+    45deg,
+    rgb(159, 6, 83),
+    rgb(166, 55, 11),
+    #90ee90
+  );
   min-height: 100vh;
 `;
 
@@ -21,7 +26,11 @@ export const FormContainer = styled.form`
   background-color: #ffcf33;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
-
+export const ErrorMessage = styled.p`
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 10px;
+`;
 export const InputField = styled.input`
   width: 100%;
   padding: 10px;

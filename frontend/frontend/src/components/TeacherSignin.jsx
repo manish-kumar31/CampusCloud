@@ -1,70 +1,102 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // ✅ Axios for API requests
+import axios from "axios";
 import {
-  TeacherSignInContainer,
+  AdminSignInContainer,
   FormContainer,
   InputField,
   SubmitButton,
-} from "../styles/TeacherSignInStyles";
+  ErrorMessage,
+} from "../styles/AdminSignInStyles";
 
 const TeacherSignIn = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [univId, setUnivId] = useState("");
+  const [dob, setDob] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignIn = async () => {
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
     try {
       const response = await axios.post(
         "http://localhost:8080/api/auth/login",
         {
-          username: email,
-          password: password,
+          universityId: univId,
+          dob: dob,
+        },
+        {
+          withCredentials: true,
         }
       );
 
+      console.log("Login response:", response);
+
       if (
         response.data.status === "success" &&
-        response.data.role === "TEACHER"
+        response.data.role === "FACULTY"
       ) {
-        console.log("Login success:", response.data);
-        // Optional: Store in localStorage or context
         localStorage.setItem("teacherName", response.data.name);
         localStorage.setItem("teacherId", response.data.userId);
+        localStorage.setItem(
+          "facultyUnivId",
+          response.headers["x-faculty-univid"]
+        );
+
+        console.log("Redirect path:", response.data.redirect);
+        console.log(
+          "Stored facultyUnivId:",
+          response.headers["x-faculty-univid"]
+        );
 
         navigate("/teacher/dashboard");
       } else {
-        setError("Invalid role or credentials");
+        setError(response.data?.message || "Invalid role or credentials");
       }
     } catch (error) {
-      console.error("Login failed:", error);
-      setError("Invalid credentials or server error");
+      console.error("Login error:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+      }
+      setError(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <TeacherSignInContainer>
+    <AdminSignInContainer>
       <h2>Teacher Sign In</h2>
-      <FormContainer>
+      <FormContainer onSubmit={handleSignIn}>
         <InputField
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="University ID"
+          value={univId}
+          onChange={(e) => setUnivId(e.target.value)}
           required
         />
         <InputField
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          type="text"
+          placeholder="Date of Birth (YYYY-MM-DD)"
+          value={dob}
+          onChange={(e) => setDob(e.target.value)}
           required
+          pattern="\d{4}-\d{2}-\d{2}"
+          title="Please enter date in YYYY-MM-DD format"
         />
-        <SubmitButton onClick={handleSignIn}>Sign In</SubmitButton>
-        {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+        <SubmitButton type="submit" disabled={isLoading}>
+          {isLoading ? "Signing In..." : "Sign In"}
+        </SubmitButton>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </FormContainer>
-    </TeacherSignInContainer>
+    </AdminSignInContainer>
   );
 };
 

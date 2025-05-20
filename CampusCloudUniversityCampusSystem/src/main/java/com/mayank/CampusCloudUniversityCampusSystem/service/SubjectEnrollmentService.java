@@ -8,11 +8,13 @@ import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Component
 public class SubjectEnrollmentService {
 
     @Autowired
@@ -38,7 +40,7 @@ public class SubjectEnrollmentService {
         enrollment.setSubjectCode(request.getSubjectCode());
         enrollment.setCredits(request.getCredits());
         enrollment.setFaculty(faculty);
-        enrollment.setStudents(allStudents);
+        enrollment.setEnrolledStudents(allStudents);
 
         return subjectRepo.save(enrollment);
     }

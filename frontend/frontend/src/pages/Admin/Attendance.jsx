@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import axios from "axios";
 import {
   AttendanceContainer,
   Content,
@@ -12,7 +12,7 @@ import {
   CheckboxLabel,
   Divider,
   SubmitButton,
-} from '../../styles/AttendanceStyles';
+} from "../../styles/AttendanceStyles";
 
 const Attendance = () => {
   const [students, setStudents] = useState([]); // 🔧 Define the students array
@@ -20,9 +20,9 @@ const Attendance = () => {
   useEffect(() => {
     // You can later replace this with an actual API call using axios
     const dummyData = [
-      { id: 1, name: 'Alice' },
-      { id: 2, name: 'Bob' },
-      { id: 3, name: 'Charlie' },
+      { id: 1, name: "Alice" },
+      { id: 2, name: "Bob" },
+      { id: 3, name: "Charlie" },
     ];
     setStudents(dummyData);
   }, []);

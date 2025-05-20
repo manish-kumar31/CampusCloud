@@ -65,9 +65,8 @@ public class Student {
     @Column (nullable = true,updatable = true)
     private byte[] stuImage;
 
-    @ManyToMany(mappedBy = "students")
-    private List <SubjectEnrollment> requests;
-
+    @ManyToMany(mappedBy = "enrolledStudents")
+    private List<SubjectEnrollment> enrolledStudents = new ArrayList<>();
     @Column(nullable = true)
     private String password;
 

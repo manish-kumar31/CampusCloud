@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import Sidebar from './Sidebar';
+import React, { useState } from "react";
+import Sidebar from "./Sidebar";
 import {
   StudentsContainer,
   Content,
@@ -15,45 +15,45 @@ import {
   FormRow,
   ActionButton,
   ButtonGroup,
-  FormSelect
-} from '../../styles/StudentsStyles';
+  FormSelect,
+} from "../../styles/StudentsStyles";
 
 const Students = () => {
   // State for form inputs - only required fields initialized
   const [studentData, setStudentData] = useState({
-    name: '',
-    emailId: '',
-    univId: '',
+    name: "",
+    emailId: "",
+    univId: "",
     // Other fields will be added as needed
   });
 
   const [students, setStudents] = useState([]);
   const [file, setFile] = useState(null);
-  const [activeTab, setActiveTab] = useState('single');
+  const [activeTab, setActiveTab] = useState("single");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setStudentData(prev => ({
+    setStudentData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Add single student - only sending required fields
   const handleAddStudent = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!studentData.name || !studentData.emailId) {
-      alert('Name and Email are required fields');
+      alert("Name and Email are required fields");
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/uploadStudent', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8080/api/uploadStudent", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: studentData.name,
@@ -69,28 +69,34 @@ const Students = () => {
           ...(studentData.contactNo && { contactNo: studentData.contactNo }),
           ...(studentData.address && { address: studentData.address }),
           ...(studentData.gender && { gender: studentData.gender }),
-          ...(studentData.nationality && { nationality: studentData.nationality }),
+          ...(studentData.nationality && {
+            nationality: studentData.nationality,
+          }),
           ...(studentData.bloodGroup && { bloodGroup: studentData.bloodGroup }),
-          ...(studentData.parentContactNo && { parentContactNo: studentData.parentContactNo }),
+          ...(studentData.parentContactNo && {
+            parentContactNo: studentData.parentContactNo,
+          }),
           ...(studentData.parentName && { parentName: studentData.parentName }),
-          ...(studentData.parentOccupation && { parentOccupation: studentData.parentOccupation })
-        })
+          ...(studentData.parentOccupation && {
+            parentOccupation: studentData.parentOccupation,
+          }),
+        }),
       });
 
-      if (!response.ok) throw new Error('Failed to add student');
+      if (!response.ok) throw new Error("Failed to add student");
 
       const newStudent = await response.json();
       setStudents([...students, newStudent]);
-      
+
       // Reset form but keep optional fields blank
       setStudentData({
-        name: '',
-        emailId: '',
-        univId: '',
+        name: "",
+        emailId: "",
+        univId: "",
         // Clear other fields if needed
       });
     } catch (error) {
-      console.error('Error adding student:', error);
+      console.error("Error adding student:", error);
       alert(error.message);
     }
   };
@@ -101,21 +107,24 @@ const Students = () => {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
     try {
-      const response = await fetch('http://localhost:8080/api/uploadStudentDetails', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await fetch(
+        "http://localhost:8080/api/uploadStudentDetails",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      if (!response.ok) throw new Error('Bulk upload failed');
+      if (!response.ok) throw new Error("Bulk upload failed");
 
       const count = await response.json();
       alert(`Successfully uploaded ${count} students`);
       // You might want to refresh the student list here
     } catch (error) {
-      console.error('Error in bulk upload:', error);
+      console.error("Error in bulk upload:", error);
       alert(error.message);
     }
   };
@@ -126,23 +135,23 @@ const Students = () => {
       <Content>
         <StudentsContent>
           <StudentsHeader>Student Management</StudentsHeader>
-          
+
           <ButtonGroup>
-            <ActionButton 
-              active={activeTab === 'single'}
-              onClick={() => setActiveTab('single')}
+            <ActionButton
+              active={activeTab === "single"}
+              onClick={() => setActiveTab("single")}
             >
               Add Single Student
             </ActionButton>
-            <ActionButton 
-              active={activeTab === 'bulk'}
-              onClick={() => setActiveTab('bulk')}
+            <ActionButton
+              active={activeTab === "bulk"}
+              onClick={() => setActiveTab("bulk")}
             >
               Bulk Upload
             </ActionButton>
           </ButtonGroup>
 
-          {activeTab === 'single' ? (
+          {activeTab === "single" ? (
             <AddStudentForm onSubmit={handleAddStudent}>
               <FormSection>
                 <h3>Required Information</h3>
@@ -168,7 +177,7 @@ const Students = () => {
                     />
                   </div>
                 </FormRow>
-                
+
                 <FormRow>
                   {/* <div>
                     <label>University ID</label>
@@ -213,7 +222,7 @@ const Students = () => {
                     />
                   </div>
                 </FormRow>
-                
+
                 <FormRow>
                   <div>
                     <label>Semester</label>
@@ -264,7 +273,7 @@ const Students = () => {
                     </FormSelect>
                   </div>
                 </FormRow>
-                
+
                 <FormRow>
                   <div>
                     <label>Contact Number</label>
@@ -293,9 +302,9 @@ const Students = () => {
             <FileUploadContainer>
               <h3>Bulk Upload Students</h3>
               <form onSubmit={handleBulkUpload}>
-                <input 
-                  type="file" 
-                  onChange={(e) => setFile(e.target.files[0])} 
+                <input
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
                   accept=".csv"
                   required
                 />
@@ -312,9 +321,10 @@ const Students = () => {
                 <StudentItem key={index}>
                   <strong>Name:</strong> {student.name} <br />
                   <strong>Email:</strong> {student.emailId} <br />
-                  <strong>University ID:</strong> {student.univId || 'N/A'} <br />
-                  <strong>Course:</strong> {student.subject || 'N/A'} <br/>
-                  <strong>Roll no:</strong> {student.rollNo || 'N/A'}
+                  <strong>University ID:</strong> {student.univId || "N/A"}{" "}
+                  <br />
+                  <strong>Course:</strong> {student.subject || "N/A"} <br />
+                  <strong>Roll no:</strong> {student.rollNo || "N/A"}
                 </StudentItem>
               ))
             ) : (
