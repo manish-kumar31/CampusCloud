@@ -1,24 +1,35 @@
-// ClassSection.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// EventCalendar.js
+import React from 'react';
 import Sidebar from './Sidebar';
-import { ClassContainer, SidebarContainer, Content, ClassHeader, ClassList, ClassItem } 
-from '../../styles/ClassesStyles'; 
+import {
+  EventCalendarContainer,
+  Content,
+  CalendarContainer,
+} from '../../styles/EventCalendarStyles';
 
-
-const ClassSection = () => {
+const EventCalendar = () => {
   return (
-    <ClassContainer>
-      <SidebarContainer>
-        <Sidebar />
-      </SidebarContainer>
+    <EventCalendarContainer>
+      <Sidebar />
       <Content>
-        <ClassHeader>Classes</ClassHeader>
-        <ClassList>
-        </ClassList>
+        <h1>Events & Calendar</h1>
+
+        <CalendarContainer>
+          {/* Default PDF shown here */}
+          <iframe
+            src="/public/classinfo.pdf"
+            width="100%"
+            height="600px"
+            style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+            title="Class Info PDF"
+          >
+            This browser does not support PDFs.
+            <a href="/assets/classinfo.pdf">Download PDF</a>.
+          </iframe>
+        </CalendarContainer>
       </Content>
-    </ClassContainer>
+    </EventCalendarContainer>
   );
 };
 
-export default ClassSection;
+export default EventCalendar;

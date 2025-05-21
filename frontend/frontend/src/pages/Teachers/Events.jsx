@@ -1,41 +1,62 @@
-// EventSection.js
+// EventCalendar.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Sidebar from './Sidebar';
-import { EventCalendarContainer, Content, CalendarContainer, Events, Event, AddEventForm, EventInput, AddEventButton, ErrorText } 
-from '../../styles/EventCalendarStyles'; 
+import axios from 'axios';
+import {
+  EventCalendarContainer,
+  Content,
+  CalendarContainer,
+  Events,
+  Event,
+  AddEventForm,
+  EventInput,
+  AddEventButton,
+  ErrorText,
+} from '../../styles/EventCalendarStyles';
 
-const EventSection = () => {
-  return(
+const EventCalendar = () => {
+  return (
     <EventCalendarContainer>
       <Sidebar />
       <Content>
         <h1>Events & Calendar</h1>
-        <div>Current Time: {new Date().toLocaleString()}</div>
+        {/* */}
+
         <CalendarContainer>
           {/* Display Calendar Here */}
-          {/* For example: <Calendar /> */}
           Calendar
+
+          {/* PDF Viewer */}
+          <div style={{ marginTop: '20px' }}>
+            <h2>Academic Calendar PDF</h2>
+            <iframe
+              src="/academic-calendar.pdf"
+              width="100%"
+              height="600px"
+              style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+              title="Academic Calendar"
+            >
+              This browser does not support PDFs.
+              <a href="/academic-calendar.pdf">Download PDF</a>.
+            </iframe>
+          </div>
         </CalendarContainer>
-        <AddEventForm onSubmit={addEvent}>
+
+        {/* <AddEventForm>
           <h2>Add New Event</h2>
           <EventInput
             type="text"
-            value={newEvent}
-            onChange={(e) => setNewEvent(e.target.value)}
             placeholder="Enter Event"
           />
           <AddEventButton type="submit">Add Event</AddEventButton>
-        </AddEventForm>
-        {error && <ErrorText>{error}</ErrorText>}
-        <Events>
-          <h2>Events</h2>
-          {events.map((event, index) => (
-            <Event key={index}>{event}</Event>
-          ))}
-        </Events>
+        </AddEventForm> */}
+
+        {/* <Events>
+          <h2>event</h2>
+        </Events> */}
       </Content>
     </EventCalendarContainer>
   );
 };
-export default EventSection;
+
+export default EventCalendar;
