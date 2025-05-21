@@ -145,10 +145,10 @@ const Sidebar = () => {
             <StyledLink to="/admin/performance">Performance</StyledLink>
           </SidebarNavItem> */}
           <SidebarNavItem>
-            <SidebarIcon>
+            {/* <SidebarIcon>
               <BsCalendar />
-            </SidebarIcon>
-            <StyledLink to="/admin/attendance">Attendance</StyledLink>
+            </SidebarIcon> */}
+            {/* <StyledLink to="/admin/attendance">Attendance</StyledLink> */}
           </SidebarNavItem>
           <SidebarNavItem>
             <SidebarIcon>

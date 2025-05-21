@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom'; 
 import { BsGraphUp, BsPeople, BsPerson, BsFileText, BsBook, BsGraphDown, BsCalendar, BsGear, BsChatDots, BsCalendarEvent, BsQuestionSquare } from 'react-icons/bs';
+import bg1 from "../../assets/bg1.png";
 
 const SidebarContainer = styled.div`
   position: fixed;
@@ -10,7 +11,7 @@ const SidebarContainer = styled.div`
   width: ${({ isOpen }) => (isOpen ? '250px' : '80px')};
   width: 250px;
   height: 100%;
-  background-color: #2c3e50; /* Dark blue background */
+  background-color: rgb(34, 36, 141); /* Dark blue background */
   color: white;
   overflow-y: auto; /* Enable vertical scrolling */
   padding-top: 60px;
@@ -87,7 +88,7 @@ const Sidebar = () => {
   return (
     <SidebarContainer style={{ width: isOpen ? '250px' : '80px' }}>
         <SidebarHeader>
-        <Logo src={"../assets/bg1.png"} alt="Logo" />
+        <Logo src={bg1} alt="Logo" />
       </SidebarHeader>
       <SidebarHeader>Student</SidebarHeader>
       <SidebarNav>
