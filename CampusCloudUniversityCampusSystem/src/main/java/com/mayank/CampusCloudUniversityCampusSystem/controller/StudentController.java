@@ -2,7 +2,7 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
-import org.checkerframework.checker.units.qual.C;
+import com.mayank.CampusCloudUniversityCampusSystem.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +16,23 @@ public class StudentController {
     @Autowired
     private StudentRepo studentRepository;
 
-    @GetMapping("/{univId}")
+    @Autowired
+    private AuthService authService;
+
+    @GetMapping("/{studentId}")
     public ResponseEntity<Student> getStudentProfile(
-            @PathVariable String univId,
+            @PathVariable String studentId,
             @RequestHeader("Authorization") String authHeader) {
 
-//        String token = authHeader.replace("Bearer ", "");
-//        if (!tokenService.isValidToken(token)) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            authService.verifyTokenAndCheckAccess(token, studentId);
 
-        Student student = studentRepository.findByUnivId(univId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        return ResponseEntity.ok(student);
+            Student student = studentRepository.findByUnivId(studentId)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            return ResponseEntity.ok(student);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

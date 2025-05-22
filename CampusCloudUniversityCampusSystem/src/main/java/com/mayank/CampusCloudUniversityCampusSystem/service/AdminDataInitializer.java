@@ -30,18 +30,18 @@ public class    AdminDataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         try {
-            UserRecord existingFirebaseUser = firebaseAuth.getUserByEmail("TopG16951@gmail.com");
+            UserRecord existingFirebaseUser = firebaseAuth.getUserByEmail("mayankdai101997@gmail.com");
             firebaseAuth.deleteUser(existingFirebaseUser.getUid());
-            userRepo.findByEmail("TopG16951@gmail.com").ifPresent(user -> {
+            userRepo.findByEmail("mayankdai101997@gmail.com").ifPresent(user -> {
             userRepo.delete(user);});
         }
         catch (FirebaseAuthException e){
             System.out.println(e.getMessage());
         }
-           User user = service.createUser("TopG16951@gmail.com","mayankisg","Mayank Singh Rawat","admin");
+           User user = service.createUser("mayankdai101997@gmail.com","mayankisdai","Mayank Singh Rawat","admin");
            Admin admin = new Admin();
            admin.setName(user.getName());
-           admin.setUnivId("mayankisG@univ.edu");
+           admin.setUnivId(user.getEmail());
            admin.setEmail(user.getEmail());
            admin.setDob(LocalDate.now());
            admin.setPassword(user.getPassword());

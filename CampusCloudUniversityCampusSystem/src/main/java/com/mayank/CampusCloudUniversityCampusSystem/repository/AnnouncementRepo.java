@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface AnnouncementRepo extends JpaRepository<Announcement,Long> {
-    Optional<Announcement> findFirstByOrderByIdAsc();
+    Announcement findFirstByOrderByIdAsc();
 }

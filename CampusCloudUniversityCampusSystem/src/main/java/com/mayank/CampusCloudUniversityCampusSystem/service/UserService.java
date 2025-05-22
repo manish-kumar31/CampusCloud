@@ -39,7 +39,7 @@ public class UserService {
                 .setEmail(email)
                 .setPassword(password)
                 .setDisplayName(name)
-                .setEmailVerified(false);
+                .setEmailVerified(true);
 
         UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
 

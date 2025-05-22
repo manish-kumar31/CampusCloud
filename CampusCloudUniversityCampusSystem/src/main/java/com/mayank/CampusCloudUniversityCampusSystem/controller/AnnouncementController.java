@@ -37,4 +37,27 @@ public class AnnouncementController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/all/announcement")
+    public ResponseEntity<?> getAllAnnouncement(){
+
+            try {
+                return new ResponseEntity<>(service.getAllAnnouncement(),HttpStatus.OK);
+            }
+            catch(Exception e){
+                return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+            }
+    }
+
+    @DeleteMapping("/delete/Announcement")
+    public ResponseEntity<?> deleteAnnouncement(@PathVariable Long id){
+            try{
+                service.deleteAnnouncement(id);
+                return new ResponseEntity<>("Announcement deleted",HttpStatus.OK);
+            }
+            catch (Exception e) {
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            }
+    }
+
 }

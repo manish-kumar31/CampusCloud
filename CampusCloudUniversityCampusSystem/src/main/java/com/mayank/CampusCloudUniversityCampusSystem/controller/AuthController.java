@@ -2,6 +2,7 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.User;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AuthService;
+import com.mayank.CampusCloudUniversityCampusSystem.service.StudentService;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,11 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final StudentService studentService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, StudentService studentService) {
         this.authService = authService;
+        this.studentService = studentService;
     }
 
     @PostMapping("/login")
@@ -33,7 +36,7 @@ public class AuthController {
             response.put("userId", user.getId());
             response.put("role", user.getRole());
 
-            // Set redirect URL based on role
+
             String redirectUrl = switch (user.getRole().toLowerCase()) {
                 case "admin" -> "/admin/dashboard";
                 case "student" -> "/student/dashboard";

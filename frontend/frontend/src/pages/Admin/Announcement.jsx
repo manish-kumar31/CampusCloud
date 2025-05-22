@@ -18,40 +18,47 @@ import {
 const Announcement = () => {
   const [message, setMessage] = useState("");
   const [title, setTitle] = useState("General Announcement");
-  const [latestAnnouncement, setLatestAnnouncement] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/admin/announcement",
-        {
-          title,
-          message,
-        }
-      );
+      await axios.post("http://localhost:8080/api/admin/announcement", {
+        title,
+        message,
+      });
       alert("Announcement sent successfully!");
       setMessage("");
-      fetchLatestAnnouncement(); // refresh latest
+      fetchAllAnnouncements();
     } catch (error) {
       console.error("Error sending announcement:", error);
       alert("Failed to send announcement");
     }
   };
 
-  const fetchLatestAnnouncement = async () => {
+  const fetchAllAnnouncements = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/announcement"
+        "http://localhost:8080/api/all/announcement"
       );
-      setLatestAnnouncement(response.data);
+      setAnnouncements(response.data);
     } catch (error) {
-      console.error("Error fetching announcement:", error);
+      console.error("Error fetching announcements:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/delete/Announcement${id}`);
+      fetchAllAnnouncements();
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      alert("Failed to delete announcement");
     }
   };
 
   useEffect(() => {
-    fetchLatestAnnouncement();
+    fetchAllAnnouncements();
   }, []);
 
   return (
@@ -60,7 +67,6 @@ const Announcement = () => {
       <Content>
         <Title>Announcement</Title>
 
-        {/* Announcement Form */}
         <AnnouncementForm onSubmit={handleSubmit}>
           <FormGroup>
             <Label htmlFor="announcement">Announcement:</Label>
@@ -75,16 +81,18 @@ const Announcement = () => {
           <Button type="submit">Send Announcement</Button>
         </AnnouncementForm>
 
-        {/* Display Latest Announcement */}
-        <h2>Latest Announcement</h2>
+        <h2>All Announcements</h2>
         <AnnouncementList>
-          {latestAnnouncement ? (
-            <AnnouncementItem>
-              <AnnouncementContent>
-                <strong>{latestAnnouncement.title}</strong>
-                <p>{latestAnnouncement.message}</p>
-              </AnnouncementContent>
-            </AnnouncementItem>
+          {announcements.length > 0 ? (
+            announcements.map((item) => (
+              <AnnouncementItem key={item.id}>
+                <AnnouncementContent>
+                  <strong>{item.title}</strong>
+                  <p>{item.message}</p>
+                  <Button onClick={() => handleDelete(item.id)}>Delete</Button>
+                </AnnouncementContent>
+              </AnnouncementItem>
+            ))
           ) : (
             <p>No announcements yet.</p>
           )}

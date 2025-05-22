@@ -1,10 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "../src/components/Home";
-import ChooseUser from "../src/components/ChooseUser";
-import AdminSignIn from "./components/AdminSignin";
-import StudentSignIn from "./components/StudentSignin";
-import TeacherSignIn from "./components/TeacherSignin";
-
+import SignIn from "./components/SignIn";
 import AdminDashboard from "./pages/Admin/Dashboard";
 import StudentDashboard from "./pages/Students/Dashboard";
 import TeacherDashboard from "./pages/Teachers/Dashboard";
@@ -45,17 +41,13 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/choose-user" element={<ChooseUser />} />
 
-        <Route path="/admin-signIn" element={<AdminSignIn />} />
-        <Route path="/student-signIn" element={<StudentSignIn />} />
-        <Route path="/teacher-signIn" element={<TeacherSignIn />} />
+        <Route path="/signin" element={<SignIn />} />
 
-        {/*Dashboard routes */}
+        {/*Dashboard routs */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-        <Route path="/login" element={<TeacherSignIn />} />
 
         {/*Admin section here */}
         <Route path="/admin/classes" element={<Classes />} />

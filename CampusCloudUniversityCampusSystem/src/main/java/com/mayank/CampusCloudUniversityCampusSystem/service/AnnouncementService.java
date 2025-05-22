@@ -16,12 +16,20 @@ public class AnnouncementService {
 
     public Announcement sendAnnouncement(Announcement announcement) {
 
-        repo.deleteAll();
         return repo.save(announcement);
     }
 
-    public Announcement getCurrentAnnouncement() {
 
-        return repo.findFirstByOrderByIdAsc().orElse(null);
+    public List <Announcement> getAllAnnouncement(){
+
+        return repo.findAll().reversed();
+    }
+
+    public void deleteAnnouncement(Long id){
+        repo.deleteById(id);
+    }
+
+    public Announcement getCurrentAnnouncement() {
+        return repo.findFirstByOrderByIdAsc();
     }
 }

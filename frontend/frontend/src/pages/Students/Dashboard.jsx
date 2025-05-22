@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Sidebar from "./Sidebar";
 import {
-  StudentDashboardContainer,
+  DashboardContainer,
   Content,
   Section,
   SectionTitle,
@@ -16,20 +17,12 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // First check if we have cached profile data
-    const cachedProfile = localStorage.getItem("studentProfile");
-    if (cachedProfile) {
-      setStudentData(JSON.parse(cachedProfile));
-      setLoading(false);
-      return;
-    }
-
-    // If not, fetch from API
     const fetchStudentData = async () => {
       try {
-        const token = localStorage.getItem("studentToken");
-        const studentId = localStorage.getItem("studentId");
+        const token = localStorage.getItem("authToken");
+        const studentId = localStorage.getItem("userId");
 
+        // Fetch fresh data from API
         const response = await axios.get(
           `http://localhost:8080/api/students/${studentId}`,
           {
@@ -40,9 +33,14 @@ const StudentDashboard = () => {
         );
 
         setStudentData(response.data);
-        localStorage.setItem("studentProfile", JSON.stringify(response.data));
+        localStorage.setItem("userProfile", JSON.stringify(response.data));
       } catch (error) {
         console.error("Error fetching student data:", error);
+        // Fallback to cached data if available
+        const cachedProfile = localStorage.getItem("userProfile");
+        if (cachedProfile) {
+          setStudentData(JSON.parse(cachedProfile));
+        }
       } finally {
         setLoading(false);
       }
@@ -54,32 +52,38 @@ const StudentDashboard = () => {
   if (loading) return <div>Loading dashboard...</div>;
 
   return (
-    <StudentDashboardContainer>
+    <DashboardContainer>
       <Sidebar />
       <Content>
         <Section>
           <SectionTitle>
-            Welcome,{" "}
-            {studentData?.name ||
-              localStorage.getItem("studentName") ||
-              "Student"}
-            !
+            Welcome, {studentData?.name || localStorage.getItem("userName")}!
           </SectionTitle>
+
           <CardContainer>
             <Card>
-              <CardTitle>Email</CardTitle>
+              <CardTitle>Academic Information</CardTitle>
               <CardContent>
-                {studentData?.email ||
-                  localStorage.getItem("studentEmail") ||
-                  "N/A"}
+                <p>ID: {studentData?.univId || "N/A"}</p>
+                <p>Program: {studentData?.program || "N/A"}</p>
+                <p>Semester: {studentData?.semester || "N/A"}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardTitle>Contact Information</CardTitle>
+              <CardContent>
+                <p>
+                  Email:{" "}
+                  {studentData?.email || localStorage.getItem("userEmail")}
+                </p>
+                <p>Phone: {studentData?.phone || "N/A"}</p>
               </CardContent>
             </Card>
           </CardContainer>
         </Section>
-
-        {/* Rest of your dashboard sections */}
       </Content>
-    </StudentDashboardContainer>
+    </DashboardContainer>
   );
 };
 
