@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import axios from "axios";
 import {
   AnnouncementContainer,
   Content,
@@ -13,35 +13,40 @@ import {
   AnnouncementList,
   AnnouncementItem,
   AnnouncementContent,
-} from '../../styles/AnnouncementStyles';
+} from "../../styles/AnnouncementStyles";
 
 const Announcement = () => {
-  const [message, setMessage] = useState('');
-  const [title, setTitle] = useState('General Announcement');
+  const [message, setMessage] = useState("");
+  const [title, setTitle] = useState("General Announcement");
   const [latestAnnouncement, setLatestAnnouncement] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/admin/announcement', {
-        title,
-        message,
-      });
-      alert('Announcement sent successfully!');
-      setMessage('');
+      const response = await axios.post(
+        "http://localhost:8080/api/admin/announcement",
+        {
+          title,
+          message,
+        }
+      );
+      alert("Announcement sent successfully!");
+      setMessage("");
       fetchLatestAnnouncement(); // refresh latest
     } catch (error) {
-      console.error('Error sending announcement:', error);
-      alert('Failed to send announcement');
+      console.error("Error sending announcement:", error);
+      alert("Failed to send announcement");
     }
   };
 
   const fetchLatestAnnouncement = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/announcement');
+      const response = await axios.get(
+        "http://localhost:8080/api/announcement"
+      );
       setLatestAnnouncement(response.data);
     } catch (error) {
-      console.error('Error fetching announcement:', error);
+      console.error("Error fetching announcement:", error);
     }
   };
 

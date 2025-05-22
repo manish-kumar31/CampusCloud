@@ -22,6 +22,10 @@
         @Column(nullable = true,unique = true,name="univ_id")
         private String univId;
 
+
+        @Column(unique = true)
+        private String firebaseUid;
+
         private String department;
         @Email
         private String emailId;

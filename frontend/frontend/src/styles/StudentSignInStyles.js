@@ -1,12 +1,17 @@
 // StudentSignInStyles.js
-import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 export const StudentSignInContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(45deg, #FF69B4, #FFA07A, #90EE90); /* Gradient background */
+  background: linear-gradient(
+    45deg,
+    #ff69b4,
+    #ffa07a,
+    #90ee90
+  ); /* Gradient background */
   min-height: 100vh; /* Full height of the viewport */
 `;
 
@@ -31,25 +36,30 @@ export const InputField = styled.input`
   border-radius: 4px;
 `;
 
-export const SubmitButton = styled(Link)`
+export const SubmitButton = styled.button`
   width: 100%;
   padding: 12px;
   margin-top: 20px;
   border: none;
   border-radius: 8px;
-  background-color: #FF4500;
+  background-color: #ff4500;
   color: white;
   font-size: 18px;
-  text-decoration: none;
   text-align: center;
   cursor: pointer;
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #FF6347;
+    background-color: #ff6347;
   }
 
   @media screen and (max-width: 768px) {
     font-size: 16px;
   }
+`;
+export const ErrorMessage = styled.p`
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
 `;

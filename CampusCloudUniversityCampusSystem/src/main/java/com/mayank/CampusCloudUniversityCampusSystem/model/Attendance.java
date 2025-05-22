@@ -15,7 +15,7 @@ public class Attendance {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_univ_id", nullable = false)
     private Student student;
 
     @ManyToOne
@@ -25,7 +25,6 @@ public class Attendance {
     private LocalDate date;
     private boolean isPresent;
 
-    // Many-to-One with Faculty (who marked the attendance)
     @ManyToOne
     @JoinColumn(name = "faculty_univ_id", nullable = false)
     private Faculty faculty;

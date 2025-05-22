@@ -27,9 +27,14 @@ public class Admin {
     @Column(nullable = true)
     private String univId;
 
+    @Email
+    private String email;
+
     private LocalDate dob;
 
     @Column(nullable = true)
     private String password;
+    @Column(nullable = false)
+    private String firebaseUid;
 
 }

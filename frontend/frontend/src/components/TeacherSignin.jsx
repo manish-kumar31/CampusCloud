@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { auth, signInWithEmailAndPassword } from "../firebase";
 import {
-  AdminSignInContainer,
+  TeacherSignInContainer,
   FormContainer,
   InputField,
   SubmitButton,
   ErrorMessage,
-} from "../styles/AdminSignInStyles";
+} from "../styles/TeacherSignInStyles";
 
 const TeacherSignIn = () => {
-  const [univId, setUnivId] = useState("");
-  const [dob, setDob] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,68 +23,64 @@ const TeacherSignIn = () => {
     setError("");
 
     try {
+      // 1. Authenticate with Firebase
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const idToken = await userCredential.user.getIdToken();
+
+      // 2. Verify with your backend
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          username: univId, // Changed from universityId to match backend
-          password: dob, // Changed from dob to match backend
-        }
+        "http://localhost:8080/auth/login",
+        { idToken },
+        { headers: { "Content-Type": "application/json" } }
       );
 
       if (
         response.data.status === "success" &&
-        response.data.role === "FACULTY"
+        response.data.role.toLowerCase() === "faculty"
       ) {
         localStorage.setItem("teacherName", response.data.name);
         localStorage.setItem("teacherId", response.data.userId);
+        localStorage.setItem("firebaseToken", idToken);
 
-        // Only store if header exists
-        if (response.headers["x-faculty-univid"]) {
-          localStorage.setItem(
-            "facultyUnivId",
-            response.headers["x-faculty-univid"]
-          );
-        }
-
-        navigate(response.data.redirect || "/teacher/dashboard");
+        navigate(response.data.redirectUrl || "/teacher/dashboard");
       } else {
-        setError(response.data?.message || "Invalid credentials");
+        setError("Invalid faculty credentials");
       }
     } catch (error) {
-      setError(
-        error.response?.data?.message || "Login failed. Please try again."
-      );
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AdminSignInContainer>
-      <h2>Teacher Sign In</h2>
+    <TeacherSignInContainer>
+      <h1>Faculty Portal</h1>
       <FormContainer onSubmit={handleSignIn}>
         <InputField
-          type="text"
-          placeholder="University ID"
-          value={univId}
-          onChange={(e) => setUnivId(e.target.value)}
+          type="email"
+          placeholder="Faculty Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <InputField
-          type="text"
-          placeholder="Date of Birth (YYYY-MM-DD)"
-          value={dob}
-          onChange={(e) => setDob(e.target.value)}
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
-          pattern="\d{4}-\d{2}-\d{2}"
-          title="Please enter date in YYYY-MM-DD format"
         />
         <SubmitButton type="submit" disabled={isLoading}>
           {isLoading ? "Signing In..." : "Sign In"}
         </SubmitButton>
         {error && <ErrorMessage>{error}</ErrorMessage>}
       </FormContainer>
-    </AdminSignInContainer>
+    </TeacherSignInContainer>
   );
 };
 

@@ -36,6 +36,9 @@ public class Student {
     @Column(nullable = true)
     private String rollNo;
 
+    @Column(unique = true)
+    private String firebaseUid;
+
     @Column(nullable = true)
     private LocalDate dob;
 
@@ -58,7 +61,7 @@ public class Student {
     @Email
     private String emailId;
 
-    @Column(nullable = true)
+    @Column(nullable = true,unique = true,name= "univ_id")
     private String univId;
 
     @Lob

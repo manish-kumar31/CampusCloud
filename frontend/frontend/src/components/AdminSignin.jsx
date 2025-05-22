@@ -1,67 +1,91 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { auth, signInWithEmailAndPassword } from "../firebase";
 import {
   AdminSignInContainer,
   FormContainer,
   InputField,
   SubmitButton,
+  ErrorMessage,
 } from "../styles/AdminSignInStyles";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const AdminSignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle Sign In
   const handleSignIn = async (e) => {
     e.preventDefault();
-    console.log("Sign-In form submitted!");
-    alert("Sign-In process starting...");
+    setIsLoading(true);
+    setError("");
 
     try {
+      // 1. Authenticate with Firebase
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const idToken = await userCredential.user.getIdToken();
+
+      // 2. Verify with your backend
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          username: email,
-          password: password, // expected in yyyy-MM-dd format
-        }
+        "http://localhost:8080/auth/login",
+        { idToken },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      const data = response.data;
+      if (
+        response.data.status === "success" &&
+        response.data.role.toLowerCase() === "admin"
+      ) {
+        localStorage.setItem("adminName", response.data.name);
+        localStorage.setItem("adminId", response.data.userId);
+        localStorage.setItem("firebaseToken", idToken);
 
-      if (data.status === "success" && data.role === "ADMIN") {
-        alert("Login successful!");
-        console.log("Admin logged in:", data);
-        navigate(data.redirect); // should be '/admin/dashboard'
+        navigate(response.data.redirectUrl || "/admin/dashboard");
       } else {
-        alert("Not an admin or login failed.");
+        setError("Invalid admin credentials");
       }
     } catch (error) {
-      console.error("Login failed:", error.response?.data || error.message);
-      alert("Invalid credentials or server error.");
+      setError(error.message || "Login failed. Please try again.");
+
+      // Handle password reset
+      if (error.code === "auth/wrong-password") {
+        if (confirm("Wrong password. Would you like to reset your password?")) {
+          // Implement password reset logic here
+        }
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <AdminSignInContainer>
-      <h1>Admin Sign In</h1>
+      <h1>Admin Portal</h1>
       <FormContainer onSubmit={handleSignIn}>
         <InputField
           type="email"
-          placeholder="Email"
+          placeholder="Admin Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
         <InputField
           type="password"
-          placeholder="Password (yyyy-MM-dd)"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <SubmitButton type="submit">Sign In</SubmitButton>
+        <SubmitButton type="submit" disabled={isLoading}>
+          {isLoading ? "Signing In..." : "Sign In"}
+        </SubmitButton>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </FormContainer>
     </AdminSignInContainer>
   );

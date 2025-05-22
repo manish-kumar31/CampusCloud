@@ -25,14 +25,14 @@ public class SubjectEnrollment {
     private int credits;
 
     @ManyToOne
-    @JoinColumn(name = "faculty_univ_id",referencedColumnName = "univ_id")
+    @JoinColumn(name = "faculty_univ_id", referencedColumnName = "univ_id")
     private Faculty faculty;
 
     @ManyToMany
     @JoinTable(
             name = "subject_student_enrollment",
             joinColumns = @JoinColumn(name = "subject_id"),
-            inverseJoinColumns = @JoinColumn(name = "student_id")
+            inverseJoinColumns = @JoinColumn(name = "student_univ_id", referencedColumnName = "univ_id")
     )
     private List<Student> enrolledStudents = new ArrayList<>();
 }

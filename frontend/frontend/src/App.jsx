@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "../src/components/Home";
 import ChooseUser from "../src/components/ChooseUser";
-import AdminSignIn from "./components/AdminSignIn";
-import StudentSignIn from "./components/StudentSignIn";
-import TeacherSignIn from "./components/TeacherSignIn";
+import AdminSignIn from "./components/AdminSignin";
+import StudentSignIn from "./components/StudentSignin";
+import TeacherSignIn from "./components/TeacherSignin";
 
 import AdminDashboard from "./pages/Admin/Dashboard";
 import StudentDashboard from "./pages/Students/Dashboard";

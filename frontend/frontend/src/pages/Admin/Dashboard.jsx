@@ -71,10 +71,6 @@ const AdminDashboard = () => {
                 <CardTitle>Total Teachers</CardTitle>
                 <CardContent>{teacherCount}</CardContent>
               </Card>
-              <Card>
-                <CardTitle>Total Classes</CardTitle>
-                <CardContent>{classCount}</CardContent>
-              </Card>
             </CardContainer>
           </Section>
 

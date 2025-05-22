@@ -1,45 +1,85 @@
-// StudentDashboard.js
-import React from 'react';
-import Sidebar from './Sidebar';
-import { StudentDashboardContainer, Content, Section, SectionTitle, CardContainer, Card, CardTitle, CardContent } 
-from '../../styles/DashboardStyles';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import {
+  StudentDashboardContainer,
+  Content,
+  Section,
+  SectionTitle,
+  CardContainer,
+  Card,
+  CardTitle,
+  CardContent,
+} from "../../styles/DashboardStyles";
 
 const StudentDashboard = () => {
+  const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // First check if we have cached profile data
+    const cachedProfile = localStorage.getItem("studentProfile");
+    if (cachedProfile) {
+      setStudentData(JSON.parse(cachedProfile));
+      setLoading(false);
+      return;
+    }
+
+    // If not, fetch from API
+    const fetchStudentData = async () => {
+      try {
+        const token = localStorage.getItem("studentToken");
+        const studentId = localStorage.getItem("studentId");
+
+        const response = await axios.get(
+          `http://localhost:8080/api/students/${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setStudentData(response.data);
+        localStorage.setItem("studentProfile", JSON.stringify(response.data));
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentData();
+  }, []);
+
+  if (loading) return <div>Loading dashboard...</div>;
+
   return (
     <StudentDashboardContainer>
       <Sidebar />
       <Content>
         <Section>
-          <SectionTitle>Overview</SectionTitle>
+          <SectionTitle>
+            Welcome,{" "}
+            {studentData?.name ||
+              localStorage.getItem("studentName") ||
+              "Student"}
+            !
+          </SectionTitle>
           <CardContainer>
             <Card>
-              <CardTitle>Assignments</CardTitle>
-              <CardContent>5</CardContent>
-            </Card>
-            <Card>
-              <CardTitle>Performance</CardTitle>
-              <CardContent>500</CardContent>
-            </Card>
-            <Card>
-              <CardTitle>Term</CardTitle>
-              <CardContent>1</CardContent>
+              <CardTitle>Email</CardTitle>
+              <CardContent>
+                {studentData?.email ||
+                  localStorage.getItem("studentEmail") ||
+                  "N/A"}
+              </CardContent>
             </Card>
           </CardContainer>
         </Section>
 
-        <Section>
-          <SectionTitle>Recent Activity</SectionTitle>
-          {/* Add a list of recent activity items */}
-        </Section>
-
-        <Section>
-          <SectionTitle>Upcoming Events</SectionTitle>
-          {/* Add a calendar or list of upcoming events */}
-        </Section>
-
-        {/* Add more sections for other parts of the admin dashboard */}
+        {/* Rest of your dashboard sections */}
       </Content>
-    </StudentDashboardContainer> 
+    </StudentDashboardContainer>
   );
 };
 

@@ -1,9 +1,6 @@
 package com.mayank.CampusCloudUniversityCampusSystem.service;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.Admin;
-import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
-import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
-import com.mayank.CampusCloudUniversityCampusSystem.model.StudentCsvRepresentation;
+import com.mayank.CampusCloudUniversityCampusSystem.model.*;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.AdminRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
@@ -13,9 +10,11 @@ import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +42,9 @@ public class AdminService {
     private StudentRepo studentRepo;
     @Autowired
     private FacultyRepo facultyRepo;
-    public Integer uploadDetailsOfStudentsBulk (MultipartFile file) throws IOException {
+    @Autowired
+    private UserService service;
+    public Integer uploadDetailsOfStudentsBulk (MultipartFile file) throws Exception {
 
         Set<Student> students = parseCsv(file);
         List<Student> savedStudents = studentRepo.saveAll(students);
@@ -53,9 +54,15 @@ public class AdminService {
             String password = generatePassword(stu.getDob());
             stu.setPassword(password);
             stu.setRollNo(rollNo);
+            stu.setUnivId(generateUnivId(stu.getName(),stu.getContactNo()));
+
+            User user = service.createUser(stu.getUnivId(),stu.getPassword(),stu.getName(),"student");
+            stu.setFirebaseUid(user.getFirebaseUid());
         }
 
         studentRepo.saveAll(savedStudents);
+
+
         return students.size();
 
     }
@@ -123,8 +130,8 @@ public class AdminService {
 
         String firstName = nameParts[0];
 
-        return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit)
-                + "@stu.edu";
+        return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit)+
+        (int)(Math.random()*100) + "@stu.edu";
 
     }
 
@@ -138,8 +145,9 @@ public class AdminService {
 
         String firstName = nameParts[1];
 
-        return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit)
-                + "@univ.edu";
+        return reverse(firstName) + String.valueOf(thirdLastDigit) + String.valueOf(secondLastDigit) + String.valueOf(lastDigit) +
+
+            (int)(Math.random() * 100)  + "@univ.edu";
 
     }
 
@@ -148,7 +156,7 @@ public class AdminService {
         return new StringBuilder(name).reverse().toString();
     }
 
-    public Student uploadStudentDetail(Student student) {
+    public Student uploadStudentDetail(Student student) throws Exception {
 
         Student savedStudent =  studentRepo.save(student); // So that uniqueId is generated first before generating RollNo
         String rollNo = generateRollNo(savedStudent.getYear(), savedStudent.getBranch(), savedStudent.getId());
@@ -156,17 +164,21 @@ public class AdminService {
         savedStudent.setPassword(generatePassword(savedStudent.getDob()));
         savedStudent.setUnivId(generateUnivId(savedStudent.getName(),savedStudent.getContactNo()));
 
+        service.createUser(savedStudent.getUnivId(),savedStudent.getPassword(),savedStudent.getName(),"student");
+        savedStudent.setFirebaseUid(savedStudent.getFirebaseUid());
         return studentRepo.save(savedStudent);
 
     }
 
 
 
-    public Faculty uploadFacultyDetail(Faculty faculty) {
+    public Faculty uploadFacultyDetail(Faculty faculty) throws Exception {
 
         Faculty savedFaculty =  facultyRepo.save(faculty);
         savedFaculty.setPassword(generatePassword(savedFaculty.getDob()));
         savedFaculty.setUnivId(generateUnivIdFaculty(savedFaculty.getName(),savedFaculty.getContactNo()));
+        User user = service.createUser(savedFaculty.getUnivId(),savedFaculty.getPassword(),savedFaculty.getName(),"faculty");
+        savedFaculty.setFirebaseUid(user.getFirebaseUid());
         return facultyRepo.save(savedFaculty);
 
     }
@@ -271,7 +283,6 @@ public class AdminService {
         }
 
     }
-
 
 
 }

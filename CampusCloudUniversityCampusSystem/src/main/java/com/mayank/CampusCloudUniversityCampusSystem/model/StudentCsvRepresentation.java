@@ -11,8 +11,7 @@ import org.springframework.boot.autoconfigure.web.WebProperties;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -63,7 +62,8 @@ public class StudentCsvRepresentation {
     @CsvBindByName(column = "parentOccupation")
     private String parentOccupation;
 
-
+    @Column(nullable = false)
+    private String firebaseUid;
     @Email
     @CsvBindByName(column = "emailId")
     private String emailId;

@@ -1,55 +1,82 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // ✅ for API call
+import axios from "axios";
+import { auth, signInWithEmailAndPassword } from "../firebase";
 import {
   StudentSignInContainer,
   FormContainer,
   InputField,
   SubmitButton,
+  ErrorMessage,
 } from "../styles/StudentSignInStyles";
 
 const StudentSignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-  const handleSignIn = async () => {
     try {
+      // 1. Authenticate with Firebase
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const idToken = await userCredential.user.getIdToken();
+
+      // 2. Verify with your backend
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          username: email,
-          password: password,
-        }
+        "http://localhost:8080/auth/login",
+        { idToken },
+        { headers: { "Content-Type": "application/json" } }
       );
 
       if (
         response.data.status === "success" &&
-        response.data.role === "STUDENT"
+        response.data.role.toLowerCase() === "student"
       ) {
-        console.log("Login success:", response.data);
-        // Optional: Store in localStorage or context
-        localStorage.setItem("studentName", response.data.name);
+        // Store all relevant student data
+        localStorage.setItem("studentToken", idToken);
         localStorage.setItem("studentId", response.data.userId);
+        localStorage.setItem("studentName", response.data.name);
+        localStorage.setItem("studentEmail", email);
 
-        navigate("/student/dashboard");
+        // Store the complete profile if available
+        if (response.data.profile) {
+          localStorage.setItem(
+            "studentProfile",
+            JSON.stringify(response.data.profile)
+          );
+        }
+
+        navigate(response.data.redirectUrl || "/student/dashboard");
       } else {
-        setError("Invalid role or credentials");
+        setError("Invalid student credentials");
       }
     } catch (error) {
-      console.error("Login failed:", error);
-      setError("Invalid credentials or server error");
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Login failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <StudentSignInContainer>
-      <h2>Student Sign In</h2>
-      <FormContainer>
+      <h1>Student Portal</h1>
+      <FormContainer onSubmit={handleSignIn}>
         <InputField
           type="email"
-          placeholder="Email"
+          placeholder="Student Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -61,8 +88,10 @@ const StudentSignIn = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <SubmitButton onClick={handleSignIn}>Sign In</SubmitButton>
-        {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+        <SubmitButton type="submit" disabled={isLoading}>
+          {isLoading ? "Signing In..." : "Sign In"}
+        </SubmitButton>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </FormContainer>
     </StudentSignInContainer>
   );

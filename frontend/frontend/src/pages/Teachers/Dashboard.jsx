@@ -1,10 +1,40 @@
-// TeacherDashboard.js
-import React from 'react';
-import Sidebar from './Sidebar';
-import { TeacherDashboardContainer, Content, Section, SectionTitle, CardContainer, Card, CardTitle, CardContent } 
-from '../../styles/DashboardStyles';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Sidebar from "./Sidebar";
+import {
+  TeacherDashboardContainer,
+  Content,
+  Section,
+  SectionTitle,
+  CardContainer,
+  Card,
+  CardTitle,
+  CardContent,
+} from "../../styles/DashboardStyles";
 
 const TeacherDashboard = () => {
+  const [studentCount, setStudentCount] = useState(0);
+  const [teacherCount, setTeacherCount] = useState(0);
+  const [classCount, setClassCount] = useState(0); // Optional: add endpoint for this later
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/AdminDashboard/students/count")
+      .then((response) => setStudentCount(response.data))
+      .catch((error) => console.error("Error fetching student count:", error));
+
+    axios
+      .get("http://localhost:8080/api/AdminDashboard/faculty/count")
+      .then((response) => setTeacherCount(response.data))
+      .catch((error) => console.error("Error fetching teacher count:", error));
+
+    // Example for class count (optional)
+    axios
+      .get("http://localhost:8080/api/AdminDashboard/classes/count")
+      .then((response) => setClassCount(response.data))
+      .catch((error) => console.error("Error fetching class count:", error));
+  }, []);
+
   return (
     <TeacherDashboardContainer>
       <Sidebar />
@@ -14,30 +44,24 @@ const TeacherDashboard = () => {
           <CardContainer>
             <Card>
               <CardTitle>Total Students</CardTitle>
-              <CardContent>500</CardContent>
+              <CardContent>{studentCount}</CardContent>
             </Card>
             <Card>
               <CardTitle>Total Teachers</CardTitle>
-              <CardContent>50</CardContent>
-            </Card>
-            <Card>
-              <CardTitle>Total Classes</CardTitle>
-              <CardContent>50</CardContent>
+              <CardContent>{teacherCount}</CardContent>
             </Card>
           </CardContainer>
         </Section>
 
         <Section>
           <SectionTitle>Recent Activity</SectionTitle>
-          {/* Add a list of recent activity items */}
+          {/* TODO: Add a list of recent activities */}
         </Section>
 
         <Section>
           <SectionTitle>Upcoming Events</SectionTitle>
-          {/* Add a calendar or list of upcoming events */}
+          {/* TODO: Add a calendar or list of events */}
         </Section>
-
-        {/* Add more sections for other parts of the admin dashboard */}
       </Content>
     </TeacherDashboardContainer>
   );

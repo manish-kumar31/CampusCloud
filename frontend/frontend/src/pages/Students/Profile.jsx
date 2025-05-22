@@ -1,6 +1,5 @@
-// ProfileSection.js
-import React from 'react';
-import Sidebar from './Sidebar';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
 import {
   ProfileContainer,
   SidebarContainer,
@@ -10,17 +9,40 @@ import {
   ProfileDetail,
   Label,
   Value,
-} from '../../styles/SettingsProfileStyles'; // Import styled components from ProfileSectionStyles.js
+} from "../../styles/SettingsProfileStyles";
+import axios from "axios";
 
 const ProfileSection = () => {
-  // Sample student profile data
-  const studentProfile = {
-    name: 'John Doe',
-    age: 18,
-    grade: '12th',
-    school: 'Example High School',
-    email: 'john.doe@example.com'
-  };
+  const [studentProfile, setStudentProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("studentToken");
+        const univId = localStorage.getItem("studentUnivId"); // Changed from studentId
+
+        const response = await axios.get(
+          `http://localhost:8080/api/students/${univId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setStudentProfile(response.data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (loading) return <div>Loading profile...</div>;
 
   return (
     <ProfileContainer>
@@ -32,23 +54,23 @@ const ProfileSection = () => {
         <ProfileInfo>
           <ProfileDetail>
             <Label>Name:</Label>
-            <Value>{studentProfile.name}</Value>
+            <Value>{studentProfile?.name || "N/A"}</Value>
           </ProfileDetail>
           <ProfileDetail>
-            <Label>Age:</Label>
-            <Value>{studentProfile.age}</Value>
+            <Label>Roll No:</Label>
+            <Value>{studentProfile?.rollNo || "N/A"}</Value>
           </ProfileDetail>
           <ProfileDetail>
-            <Label>Grade:</Label>
-            <Value>{studentProfile.grade}</Value>
+            <Label>Email Id:</Label>
+            <Value>{studentProfile?.email || "N/A"}</Value>
           </ProfileDetail>
           <ProfileDetail>
-            <Label>School:</Label>
-            <Value>{studentProfile.school}</Value>
+            <Label>Contact No:</Label>
+            <Value>{studentProfile?.contactNo || "N/A"}</Value>
           </ProfileDetail>
           <ProfileDetail>
-            <Label>Email:</Label>
-            <Value>{studentProfile.email}</Value>
+            <Label>Parent Name:</Label>
+            <Value>{studentProfile?.parentName || "N/A"}</Value>
           </ProfileDetail>
         </ProfileInfo>
       </Content>

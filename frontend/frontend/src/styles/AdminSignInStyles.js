@@ -4,39 +4,43 @@ import styled from "styled-components";
 export const AdminSignInContainer = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  background: linear-gradient(
-    45deg,
-    rgb(159, 6, 83),
-    rgb(166, 55, 11),
-    #90ee90
-  );
   min-height: 100vh;
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
 `;
 
 export const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
-  align-items: center;
   width: 100%;
   max-width: 400px;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #ffcf33;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin: 1rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 `;
+
+export const InputField = styled.input`
+  width: 100%;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+
+  &:focus {
+    border-color: #3498db;
+    outline: none;
+  }
+`;
+
 export const ErrorMessage = styled.p`
   color: red;
   font-size: 0.9rem;
   margin-top: 10px;
-`;
-export const InputField = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 `;
 
 export const SubmitButton = styled.button`

@@ -1,81 +1,59 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.*;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import com.mayank.CampusCloudUniversityCampusSystem.model.User;
+import com.mayank.CampusCloudUniversityCampusSystem.service.AuthService;
+import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/auth")
-
+@RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired private StudentRepo studentRepo;
-    @Autowired private FacultyRepo facultyRepo;
-    @Autowired private AdminRepo adminRepo;
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody LoginRequest loginRequest) {
-        Map<String, Object> response = new HashMap<>();
-
+    public ResponseEntity<?> login(@RequestBody TokenRequest tokenRequest) {
         try {
-            LocalDate dob = LocalDate.parse(loginRequest.getPassword());
-            String dobString = dob.toString();
+            User user = authService.verifyTokenAndGetUser(tokenRequest.getIdToken())
+                    .orElseThrow(() -> new Exception("User not found in database"));
 
-            // Check STUDENT
-            Student student = studentRepo.findByUnivId(loginRequest.getUsername());
-            if (student != null && dobString.equals(student.getPassword())) {
-                return buildSuccessResponse("STUDENT", student.getId(),
-                        "/student/dashboard", student.getName(), student.getUnivId());
-            }
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("name", user.getName());
+            response.put("email", user.getEmail());
+            response.put("userId", user.getId());
+            response.put("role", user.getRole());
 
-            // Check FACULTY
-            Faculty faculty = facultyRepo.findByUnivId(loginRequest.getUsername()).orElse(null);
-            if (faculty != null && dobString.equals(faculty.getPassword())) {
-                return buildSuccessResponse("FACULTY", faculty.getId(),
-                        "/teacher/dashboard", faculty.getName(), faculty.getUnivId());
-            }
+            // Set redirect URL based on role
+            String redirectUrl = switch (user.getRole().toLowerCase()) {
+                case "admin" -> "/admin/dashboard";
+                case "student" -> "/student/dashboard";
+                case "faculty" -> "/teacher/dashboard";
+                default -> throw new Exception("Unknown user role");
+            };
+            response.put("redirectUrl", redirectUrl);
 
-            // Check ADMIN
-            Admin admin = adminRepo.findByUnivId(loginRequest.getUsername()).orElse(null);
-            if (admin != null && dobString.equals(admin.getPassword())) {
-                return buildSuccessResponse("ADMIN", admin.getId(),
-                        "/admin/dashboard", admin.getName(), admin.getUnivId());
-            }
-
-            return buildErrorResponse("Invalid credentials");
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return buildErrorResponse("Invalid date format (use YYYY-MM-DD)");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(401).body(errorResponse);
         }
     }
 
-    private ResponseEntity<Map<String, Object>> buildSuccessResponse(
-            String role, Long userId, String redirect, String name, String univId) {
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "success");
-        response.put("role", role);
-        response.put("userId", userId);
-        response.put("redirect", redirect);
-        response.put("name", name);
-
-        return ResponseEntity.ok()
-                .header("x-" + role.toLowerCase() + "-univId", univId)
-                .body(response);
-    }
-
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "error");
-        response.put("message", message);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    @Data
+    static class TokenRequest {
+        private String idToken;
     }
 }

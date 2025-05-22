@@ -43,7 +43,7 @@ export const ErrorMessage = styled.div`
 export const SignInTitle = styled.h1`
   // some styles here
 `;
-export const SubmitButton = styled(Link)`
+export const SubmitButton = styled.button`
   width: 100%;
   padding: 12px;
   margin-top: 20px;
@@ -52,7 +52,6 @@ export const SubmitButton = styled(Link)`
   background-color: #ff4500;
   color: white;
   font-size: 18px;
-  text-decoration: none;
   text-align: center;
   cursor: pointer;
   transition: background-color 0.3s ease;

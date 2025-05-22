@@ -20,8 +20,8 @@ public class AdminController {
     @Autowired
     private AdminService service;
     @PostMapping(value = "/uploadStudentDetails",consumes = "multipart/form-data")
-    public ResponseEntity<Integer> uploadDetailsOfStudentsBulk (
-            @RequestPart("file") MultipartFile file) throws IOException {
+    public ResponseEntity<?> uploadDetailsOfStudentsBulk (
+            @RequestPart("file") MultipartFile file) throws Exception {
 
         return  ResponseEntity.ok(service.uploadDetailsOfStudentsBulk(file));
     }
@@ -38,6 +38,7 @@ public class AdminController {
         }
 
     }
+
 
     @PostMapping ("/uploadFaculty")
     public ResponseEntity <?> uploadFacultyDetail (@RequestBody Faculty faculty){

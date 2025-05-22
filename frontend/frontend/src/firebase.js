@@ -1,20 +1,21 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // ✅ You were missing this
-import { getApps, initializeApp as initializeAppOnce } from "firebase/app";
-
-// Your web app's Firebase configuration
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 const firebaseConfig = {
-  apiKey: "AIzaSyAglADYRJpJIjXN2eYxGydcOj7effOfUHg",
-  authDomain: "logini-c4a0a.firebaseapp.com",
-  projectId: "logini-c4a0a",
-  storageBucket: "logini-c4a0a.firebasestorage.app",
-  messagingSenderId: "324831277168",
-  appId: "1:324831277168:web:fe6cda0217761356f6c4b5"
+  apiKey: "AIzaSyBwHWgULB4xZxmRsUz96LIESmh3kWr0OZs",
+  authDomain: "signuppage-8061d.firebaseapp.com",
+  projectId: "signuppage-8061d",
+  storageBucket: "signuppage-8061d.firebasestorage.app",
+  messagingSenderId: "365636183766",
+  appId: "1:365636183766:web:38bfce8a98232bb6bacb77",
 };
 
-// Initialize Firebase only if it hasn't been initialized already
-const app = getApps().length === 0 ? initializeAppOnce(firebaseConfig) : getApps()[0];
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-export { auth };
+export { auth, googleProvider, signInWithEmailAndPassword, signInWithPopup };

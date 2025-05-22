@@ -15,7 +15,7 @@ import java.util.List;
 public class AttendanceController {
     private final AttendanceService attendanceService;
 
-    // Get all students for faculty's subject
+
     @GetMapping("/my-students")
     public ResponseEntity<?> getFacultyStudents(@RequestHeader("X-Faculty-UnivId") String facultyUnivId) {
         try {
@@ -25,7 +25,7 @@ public class AttendanceController {
         }
     }
 
-    // Mark attendance for students
+
     @PostMapping("/mark")
     public ResponseEntity<?> markAttendance(
             @RequestBody List<AttendanceRequest> requests,
@@ -37,5 +37,5 @@ public class AttendanceController {
         }
     }
 
-    // Other endpoints remain same...
+
 }
