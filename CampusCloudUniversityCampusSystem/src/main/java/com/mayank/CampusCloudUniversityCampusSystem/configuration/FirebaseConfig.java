@@ -26,6 +26,7 @@ public class FirebaseConfig {
         return FirebaseApp.initializeApp(options);
     }
 
+
     @Bean
     public FirebaseAuth firebaseAuth() throws IOException {
         return FirebaseAuth.getInstance(firebaseApp());

@@ -33,7 +33,7 @@ public class AuthController {
             response.put("status", "success");
             response.put("name", user.getName());
             response.put("email", user.getEmail());
-            response.put("userId", user.getId());
+            response.put("userId", user.getFirebaseUid());
             response.put("role", user.getRole());
 
 
