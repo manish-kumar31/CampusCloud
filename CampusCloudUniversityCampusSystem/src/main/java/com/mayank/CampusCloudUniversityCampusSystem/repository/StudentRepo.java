@@ -11,7 +11,7 @@ public interface StudentRepo extends JpaRepository<Student,Long> {
 
     Optional<Student> findByRollNo(String rollNo);
     Optional <Student> findByEmailId(String emailId);
-
+    Optional <Student> findByFirebaseUid(String firebaseUid);
 
     Optional <Student> findByUnivId(String univId);
 

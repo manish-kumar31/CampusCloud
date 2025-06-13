@@ -1,17 +1,24 @@
 package com.mayank.CampusCloudUniversityCampusSystem.repository;
-
-import com.mayank.CampusCloudUniversityCampusSystem.model.Attendance;
-import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
-import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import  com.mayank.CampusCloudUniversityCampusSystem.model.Attendance;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+    List<Attendance> findByStudentUnivId(String studentUnivId);
+    List<Attendance> findBySubjectId(Long subjectId);
+    List<Attendance> findByFacultyUnivId(String facultyUnivId);
+    List<Attendance> findByStudentUnivIdAndSubjectId(String studentUnivId, Long subjectId);
 
-    boolean existsByStudentAndSubjectEnrollmentAndDate(Student student, SubjectEnrollment subjectEnrollment, LocalDate date);
-    List<Attendance> findByStudentId(Long studentId);
-    List<Attendance> findBySubjectEnrollmentId(Long subjectEnrollmentId);
+    Optional<Attendance> findByStudentUnivIdAndSubjectIdAndDate(String studentUnivId, Long subjectId, LocalDate date);
 
-    List<Attendance> findByFaculty_UnivId(String univId);
+    @Query("SELECT COUNT(DISTINCT a.date) FROM Attendance a WHERE a.subject.id = ?1")
+    long countDistinctDatesBySubjectId(Long subjectId);
+
+    @Query("SELECT COUNT(DISTINCT a.student.univId) FROM Attendance a WHERE a.subject.id = ?1")
+    long countDistinctStudentsBySubjectId(Long subjectId);
+
+    List<Attendance> findBySubjectIdAndDate(Long subjectId, LocalDate date);
 }

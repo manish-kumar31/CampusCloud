@@ -8,7 +8,7 @@ const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: ${({ isOpen }) => (isOpen ? '250px' : '80px')};
+  width: ${({ $isOpen }) => ($isOpen ? '250px' : '80px')};
   width: 250px;
   height: 100%;
   background-color: rgb(34, 36, 141); /* Dark blue background */
@@ -75,7 +75,7 @@ const ToggleButton = styled.div`
 const ToggleIcon = styled.span`
   color: white;
   font-size: 20px;
-  transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform: ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
   transition: transform 0.3s ease;
 `;
 
@@ -86,7 +86,7 @@ const Sidebar = () => {
     setIsOpen(!isOpen);
   }; 
   return (
-    <SidebarContainer style={{ width: isOpen ? '250px' : '80px' }}>
+    <SidebarContainer $isOpen={isOpen}>
         <SidebarHeader>
         <Logo src={bg1} alt="Logo" />
       </SidebarHeader>
@@ -127,7 +127,7 @@ const Sidebar = () => {
         
       </SidebarNav>
       <ToggleButton onClick={toggleSidebar}>
-        <ToggleIcon isOpen={isOpen}>▲</ToggleIcon>
+        <ToggleIcon $isOpen={isOpen}>▲</ToggleIcon>
       </ToggleButton>
     </SidebarContainer>
   );

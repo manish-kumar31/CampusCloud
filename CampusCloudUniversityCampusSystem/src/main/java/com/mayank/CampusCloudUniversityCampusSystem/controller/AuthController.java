@@ -22,7 +22,6 @@ public class AuthController {
         this.authService = authService;
         this.studentService = studentService;
     }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody TokenRequest tokenRequest) {
         try {
@@ -33,9 +32,10 @@ public class AuthController {
             response.put("status", "success");
             response.put("name", user.getName());
             response.put("email", user.getEmail());
-            response.put("userId", user.getFirebaseUid());
+            response.put("firebaseUid", user.getFirebaseUid());
             response.put("role", user.getRole());
-
+            response.put("userUnivId",user.getUnivId());
+            response.put("idToken", tokenRequest.getIdToken());
 
             String redirectUrl = switch (user.getRole().toLowerCase()) {
                 case "admin" -> "/admin/dashboard";

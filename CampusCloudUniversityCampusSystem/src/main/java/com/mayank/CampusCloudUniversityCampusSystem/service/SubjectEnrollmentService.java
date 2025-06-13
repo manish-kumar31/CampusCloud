@@ -8,13 +8,11 @@ import com.mayank.CampusCloudUniversityCampusSystem.repository.FacultyRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@Component
 public class SubjectEnrollmentService {
 
     @Autowired
@@ -26,14 +24,10 @@ public class SubjectEnrollmentService {
     @Autowired
     private FacultyRepo facultyRepo;
 
-
     public SubjectEnrollment createEnrollmentWithAllStudents(EnrollmentRequest request) {
-
         Faculty faculty = facultyRepo.findFacultyByUnivId(request.getUnivId()).orElseThrow();
 
-
         List<Student> allStudents = studentRepo.findAll();
-
 
         SubjectEnrollment enrollment = new SubjectEnrollment();
         enrollment.setSubjectName(request.getSubjectName());
@@ -44,5 +38,4 @@ public class SubjectEnrollmentService {
 
         return subjectRepo.save(enrollment);
     }
-
 }

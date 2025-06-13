@@ -14,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class UserService {
 
-    @Autowired
-    private  UserRepo userRepository;
 
     @Autowired
     FirebaseAuth firebaseAuth;
@@ -23,7 +21,7 @@ public class UserService {
     @Autowired
     UserRepo userRepo;
     @Transactional
-    public User createUser(String email, String password, String name, String role) throws Exception {
+    public User createUser(String email, String password, String name, String role,String univId) throws Exception {
         // 1. Create Firebase user
 
         try {
@@ -43,13 +41,13 @@ public class UserService {
 
         UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
 
-        // 2. Save in MySQL
         User user = new User();
         user.setFirebaseUid(userRecord.getUid());
         user.setEmail(email);
         user.setName(name);
+        user.setUnivId(univId);
         user.setRole(role);
 
-        return userRepository.save(user);
+        return userRepo.save(user);
     }
 }

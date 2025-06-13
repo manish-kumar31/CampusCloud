@@ -38,7 +38,7 @@ public class    AdminDataInitializer implements CommandLineRunner {
         catch (FirebaseAuthException e){
             System.out.println(e.getMessage());
         }
-           User user = service.createUser("mayankdai101997@gmail.com","mayankisdai","Mayank Singh Rawat","admin");
+           User user = service.createUser("mayankdai101997@gmail.com","mayankisdai","Mayank Singh Rawat","admin","admin@univ.edu");
            Admin admin = new Admin();
            admin.setName(user.getName());
            admin.setUnivId(user.getEmail());

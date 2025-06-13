@@ -18,7 +18,7 @@ import bg1 from "../../assets/bg1.png";
 const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
-  left: ${({ isOpen }) => (isOpen ? "0" : "-250px")};
+  left: ${({ $isOpen }) => ($isOpen ? "0" : "-250px")};
   width: 250px;
   height: 100%;
   background-color: rgb(34, 36, 141);
@@ -72,7 +72,7 @@ const Logo = styled.img`
 const ToggleButton = styled.div`
   position: fixed;
   top: 20px;
-  left: ${({ isOpen }) => (isOpen ? "250px" : "0")};
+  left: ${({ $isOpen }) => ($isOpen ? "250px" : "0")};
   width: 30px;
   height: 30px;
   background-color: #34495e;
@@ -88,7 +88,7 @@ const ToggleButton = styled.div`
 const ToggleIcon = styled.span`
   color: white;
   font-size: 20px;
-  transform: ${({ isOpen }) => (isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+  transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
   transition: transform 0.3s ease;
 `;
 
@@ -101,7 +101,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <SidebarContainer isOpen={isOpen}>
+      <SidebarContainer $isOpen={isOpen}>
         <SidebarHeader>
           <Logo src={bg1} alt="Logo" />
         </SidebarHeader>
@@ -175,10 +175,10 @@ const Sidebar = () => {
             <StyledLink to="/admin/settings">Settings & Profile</StyledLink>
           </SidebarNavItem>
         </SidebarNav>
+        <ToggleButton $isOpen={isOpen} onClick={toggleSidebar}>
+          <ToggleIcon $isOpen={isOpen}>▲</ToggleIcon>
+        </ToggleButton>
       </SidebarContainer>
-      <ToggleButton isOpen={isOpen} onClick={toggleSidebar}>
-        <ToggleIcon isOpen={isOpen}>▲</ToggleIcon>
-      </ToggleButton>
     </>
   );
 };

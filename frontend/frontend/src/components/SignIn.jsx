@@ -29,7 +29,6 @@ const SignIn = () => {
     setError("");
 
     try {
-      // 1. Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -37,7 +36,6 @@ const SignIn = () => {
       );
       const idToken = await userCredential.user.getIdToken();
 
-      // 2. Verify with backend (existing endpoint)
       const response = await axios.post(
         "http://localhost:8080/auth/login",
         { idToken },
@@ -45,15 +43,17 @@ const SignIn = () => {
       );
 
       if (response.data.status === "success") {
-        // Store common auth data
         localStorage.setItem("authToken", idToken);
-        localStorage.setItem("userId", response.data.userId);
+        localStorage.setItem("userFirebaseId", response.data.firebaseUid);
         localStorage.setItem("userRole", response.data.role);
+        localStorage.setItem("userUnivId", response.data.univId);
+        // ✅ Clear old cached profile before navigating to dashboard
+        localStorage.removeItem("userProfile");
 
-        // Redirect based on role (using backend's redirectUrl)
         navigate(
           response.data.redirectUrl || `/${response.data.role}/dashboard`
         );
+        window.location.reload(); // ✅ Ensures StudentDashboard loads freshly
       } else {
         setError("Invalid credentials");
       }
@@ -77,6 +77,10 @@ const SignIn = () => {
         handlePasswordReset();
       }
       return;
+    } else if (error.code === "auth/network-request-failed") {
+      errorMessage = "Network error. Please check your connection.";
+    } else if (error.code === "auth/invalid-email") {
+      errorMessage = "Invalid email format.";
     }
 
     setError(errorMessage);

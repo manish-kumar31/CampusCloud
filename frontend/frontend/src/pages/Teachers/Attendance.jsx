@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
 import {
   AttendanceContainer,
@@ -12,198 +14,387 @@ import {
   CheckboxLabel,
   Divider,
   SubmitButton,
-  ErrorMessage,
   LoadingMessage,
   EmptyMessage,
   DatePicker,
+  SubjectSelector,
+  StatsContainer,
+  StatsItem,
+  StatsTitle,
+  StatsValue,
+  RemarksInput,
 } from "../../styles/AttendanceStyles";
 
+const API_BASE_URL = "http://localhost:8080/api";
+
 const CheckAttendanceSection = () => {
-  const [students, setStudents] = useState([]);
-  const [subjectEnrollmentId, setSubjectEnrollmentId] = useState(null);
-  const [attendanceData, setAttendanceData] = useState({});
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [state, setState] = useState({
+    students: [],
+    subjects: [],
+    selectedSubject: null,
+    attendanceData: {},
+    date: new Date().toISOString().split("T")[0],
+    stats: null,
+  });
+
   const [loading, setLoading] = useState({
+    subjects: false,
     students: false,
     submission: false,
+    stats: false,
   });
-  const [error, setError] = useState(null);
 
-  const fetchStudents = async () => {
+  const authConfig = {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
+  };
+
+  const fetchSubjects = useCallback(async () => {
     try {
-      setLoading((prev) => ({ ...prev, students: true }));
-      setError(null);
+      setLoading((prev) => ({ ...prev, subjects: true }));
 
-      const facultyUnivId =
-        localStorage.getItem("facultyUnivId") || "dfd333@univ.edu";
+      // Debug: Check what's actually in localStorage
+      console.log(
+        "Current faculty ID in localStorage:",
+        localStorage.getItem("userUnivId")
+      );
 
       const response = await axios.get(
-        "http://localhost:8080/api/attendance/my-students",
-        {
-          headers: {
-            "X-Faculty-UnivId": facultyUnivId,
-          },
-        }
+        `${API_BASE_URL}/enrollments/faculty`,
+        authConfig
       );
 
-      if (!response?.data || !Array.isArray(response.data)) {
-        throw new Error("Invalid students data format");
-      }
+      // Debug: Check what the backend returned
+      console.log("Subjects from API:", response.data);
 
-      if (response.data.length === 0) {
-        throw new Error("No students found for this faculty.");
-      }
-
-      setStudents(response.data);
-      if (response.data[0]?.subjectEnrollmentId) {
-        setSubjectEnrollmentId(response.data[0].subjectEnrollmentId);
-      }
+      setState((prev) => ({
+        ...prev,
+        subjects: response.data,
+        selectedSubject: response.data.length > 0 ? response.data[0].id : null,
+      }));
     } catch (err) {
-      console.error("Error fetching students:", err);
-      setError(
-        err.response?.data?.message || err.message || "Failed to fetch students"
+      console.error("Error fetching subjects:", err);
+      toast.error(err.response?.data?.message || err.message);
+    } finally {
+      setLoading((prev) => ({ ...prev, subjects: false }));
+    }
+  }, []);
+
+  const fetchStudents = useCallback(async () => {
+    try {
+      if (!state.selectedSubject) return;
+      setLoading((prev) => ({ ...prev, students: true }));
+
+      const response = await axios.get(
+        `${API_BASE_URL}/subjects/${state.selectedSubject}/students`,
+        authConfig
       );
-      setStudents([]);
+
+      setState((prev) => ({ ...prev, students: response.data }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message);
     } finally {
       setLoading((prev) => ({ ...prev, students: false }));
     }
-  };
+  }, [state.selectedSubject]);
+
+  const loadExistingAttendance = useCallback(async () => {
+    try {
+      if (!state.selectedSubject || state.students.length === 0) return;
+
+      const response = await axios.get(
+        `${API_BASE_URL}/attendance/subject/${state.selectedSubject}/date/${state.date}`,
+        authConfig
+      );
+
+      const existingData = {};
+      response.data.forEach((record) => {
+        existingData[record.student.univId] = {
+          studentId: record.student.univId,
+          subjectId: state.selectedSubject,
+          date: state.date,
+          isPresent: record.present,
+          remarks: record.remarks || "",
+        };
+      });
+
+      // Initialize attendance data for all students
+      const initializedData = { ...existingData };
+      state.students.forEach((student) => {
+        if (!initializedData[student.univId]) {
+          initializedData[student.univId] = {
+            studentId: student.univId,
+            subjectId: state.selectedSubject,
+            date: state.date,
+            isPresent: null,
+            remarks: "",
+          };
+        }
+      });
+
+      setState((prev) => ({ ...prev, attendanceData: initializedData }));
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        toast.error(
+          err.response?.data?.message || "Failed to load attendance data"
+        );
+      }
+    }
+  }, [state.selectedSubject, state.students, state.date]);
+
+  const fetchAttendanceStats = useCallback(async () => {
+    try {
+      if (!state.selectedSubject) return;
+      setLoading((prev) => ({ ...prev, stats: true }));
+
+      const response = await axios.get(
+        `${API_BASE_URL}/attendance/stats/subject/${state.selectedSubject}`,
+        authConfig
+      );
+
+      setState((prev) => ({ ...prev, stats: response.data }));
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    } finally {
+      setLoading((prev) => ({ ...prev, stats: false }));
+    }
+  }, [state.selectedSubject]);
 
   const handleStatusChange = (studentId, isPresent) => {
-    setAttendanceData((prev) => ({
+    setState((prev) => ({
       ...prev,
-      [studentId]: {
-        studentId,
-        subjectEnrollmentId,
-        date,
-        isPresent,
+      attendanceData: {
+        ...prev.attendanceData,
+        [studentId]: {
+          ...prev.attendanceData[studentId],
+          studentId,
+          subjectId: prev.selectedSubject,
+          date: prev.date,
+          isPresent,
+          remarks: prev.attendanceData[studentId]?.remarks || "",
+        },
+      },
+    }));
+  };
+
+  const handleRemarksChange = (studentId, remarks) => {
+    setState((prev) => ({
+      ...prev,
+      attendanceData: {
+        ...prev.attendanceData,
+        [studentId]: {
+          ...prev.attendanceData[studentId],
+          remarks,
+        },
       },
     }));
   };
 
   const handleSubmit = async () => {
     try {
-      setLoading((prev) => ({ ...prev, submission: true }));
-      setError(null);
+      const facultyUnivId = localStorage.getItem("userUnivId");
+      if (!facultyUnivId) throw new Error("Faculty ID not found");
 
-      const attendanceRequests = Object.values(attendanceData);
-      if (attendanceRequests.length === 0) {
-        throw new Error("Please mark attendance for at least one student");
+      const allMarked = state.students.every(
+        (student) => state.attendanceData[student.univId]?.isPresent !== null
+      );
+
+      if (!allMarked) {
+        return toast.warn("Please mark attendance for all students.");
       }
 
-      const facultyUnivId =
-        localStorage.getItem("facultyUnivId") || "dfd333@univ.edu";
+      setLoading((prev) => ({ ...prev, submission: true }));
 
       await axios.post(
-        "http://localhost:8080/api/attendance/mark",
-        attendanceRequests,
+        `${API_BASE_URL}/attendance/bulk`,
         {
+          facultyUnivId,
+          subjectId: state.selectedSubject,
+          date: state.date,
+          studentAttendances: Object.values(state.attendanceData).map(
+            (record) => ({
+              studentUnivId: record.studentId,
+              present: record.isPresent,
+              remarks: record.remarks,
+            })
+          ),
+        },
+        {
+          ...authConfig,
           headers: {
-            "X-Faculty-UnivId": facultyUnivId,
+            ...authConfig.headers,
+            "Content-Type": "application/json",
           },
         }
       );
 
-      alert("Attendance submitted successfully!");
-      setAttendanceData({});
+      toast.success("Attendance submitted successfully!");
+      fetchAttendanceStats();
     } catch (err) {
-      console.error("Error submitting attendance:", err);
-      setError(
-        err.response?.data?.message || err.message || "Submission failed"
-      );
+      toast.error(err.response?.data?.message || err.message);
     } finally {
       setLoading((prev) => ({ ...prev, submission: false }));
     }
   };
 
+  // Initial data fetch
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    fetchSubjects();
+  }, [fetchSubjects]);
+
+  // Fetch students and attendance when subject or date changes
+  useEffect(() => {
+    if (state.selectedSubject) {
+      const fetchData = async () => {
+        await fetchStudents();
+        await loadExistingAttendance();
+        await fetchAttendanceStats();
+      };
+      fetchData();
+    }
+  }, [
+    state.selectedSubject,
+    state.date,
+    fetchStudents,
+    loadExistingAttendance,
+    fetchAttendanceStats,
+  ]);
 
   return (
     <AttendanceContainer>
       <Sidebar />
       <Content>
         <AttendanceContent>
-          {loading.students ? (
-            <LoadingMessage>Loading students...</LoadingMessage>
-          ) : error ? (
-            <ErrorMessage>Error: {error}</ErrorMessage>
-          ) : (
+          <AttendanceHeader>
+            Mark Attendance - {new Date(state.date).toLocaleDateString()}
+          </AttendanceHeader>
+
+          <ToastContainer position="top-center" autoClose={3000} />
+
+          {loading.subjects ? (
+            <LoadingMessage>Loading subjects...</LoadingMessage>
+          ) : state.subjects.length > 0 ? (
             <>
-              <AttendanceHeader>
-                Mark Attendance - {new Date(date).toLocaleDateString()}
-              </AttendanceHeader>
+              <SubjectSelector
+                value={state.selectedSubject || ""}
+                onChange={(e) =>
+                  setState((prev) => ({
+                    ...prev,
+                    selectedSubject: e.target.value,
+                  }))
+                }
+                disabled={loading.subjects || loading.students}
+              >
+                {state.subjects.map((subject) => (
+                  <option key={subject.id} value={subject.id}>
+                    {subject.subjectName} ({subject.subjectCode})
+                  </option>
+                ))}
+              </SubjectSelector>
 
               <DatePicker
                 type="date"
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  setAttendanceData({});
-                }}
+                value={state.date}
+                onChange={(e) =>
+                  setState((prev) => ({ ...prev, date: e.target.value }))
+                }
+                max={new Date().toISOString().split("T")[0]}
+                disabled={loading.students}
               />
 
-              {students.length === 0 ? (
+              {state.stats && (
+                <StatsContainer>
+                  <StatsItem>
+                    <StatsTitle>Total Classes</StatsTitle>
+                    <StatsValue>{state.stats.totalClasses}</StatsValue>
+                  </StatsItem>
+                  <StatsItem>
+                    <StatsTitle>Average Attendance</StatsTitle>
+                    <StatsValue>{state.stats.attendancePercentage}%</StatsValue>
+                  </StatsItem>
+                </StatsContainer>
+              )}
+
+              {loading.students ? (
+                <LoadingMessage>Loading students...</LoadingMessage>
+              ) : state.students.length === 0 ? (
                 <EmptyMessage>
-                  No students available for attendance
+                  No students enrolled in this subject
                 </EmptyMessage>
               ) : (
                 <>
                   <AttendanceList>
-                    {students.map((student, index) => (
-                      <React.Fragment key={student.id || index}>
+                    {state.students.map((student) => (
+                      <React.Fragment key={student.univId}>
                         <AttendanceItem>
                           <StudentName>
-                            {student.name} ({student.rollNo})
+                            {student.name} ({student.rollNo || student.univId})
                           </StudentName>
 
-                          <CheckboxLabel>
-                            <input
-                              type="radio"
-                              name={`attendance-${student.id}`}
-                              checked={
-                                attendanceData[student.id]?.isPresent === true
-                              }
-                              onChange={() =>
-                                handleStatusChange(student.id, true)
-                              }
-                            />
-                            Present
-                          </CheckboxLabel>
+                          <div>
+                            <CheckboxLabel>
+                              <input
+                                type="radio"
+                                name={`attendance-${student.univId}`}
+                                checked={
+                                  state.attendanceData[student.univId]
+                                    ?.isPresent === true
+                                }
+                                onChange={() =>
+                                  handleStatusChange(student.univId, true)
+                                }
+                              />
+                              Present
+                            </CheckboxLabel>
 
-                          <CheckboxLabel>
-                            <input
-                              type="radio"
-                              name={`attendance-${student.id}`}
-                              checked={
-                                attendanceData[student.id]?.isPresent === false
-                              }
-                              onChange={() =>
-                                handleStatusChange(student.id, false)
-                              }
-                            />
-                            Absent
-                          </CheckboxLabel>
+                            <CheckboxLabel>
+                              <input
+                                type="radio"
+                                name={`attendance-${student.univId}`}
+                                checked={
+                                  state.attendanceData[student.univId]
+                                    ?.isPresent === false
+                                }
+                                onChange={() =>
+                                  handleStatusChange(student.univId, false)
+                                }
+                              />
+                              Absent
+                            </CheckboxLabel>
+                          </div>
+
+                          <RemarksInput
+                            type="text"
+                            placeholder="Remarks"
+                            value={
+                              state.attendanceData[student.univId]?.remarks ||
+                              ""
+                            }
+                            onChange={(e) =>
+                              handleRemarksChange(
+                                student.univId,
+                                e.target.value
+                              )
+                            }
+                          />
                         </AttendanceItem>
-
-                        {index !== students.length - 1 && <Divider />}
+                        <Divider />
                       </React.Fragment>
                     ))}
                   </AttendanceList>
 
                   <SubmitButton
                     onClick={handleSubmit}
-                    disabled={
-                      loading.submission ||
-                      Object.keys(attendanceData).length === 0
-                    }
+                    disabled={loading.submission || state.students.length === 0}
                   >
                     {loading.submission ? "Submitting..." : "Submit Attendance"}
                   </SubmitButton>
                 </>
               )}
             </>
+          ) : (
+            <EmptyMessage>No subjects assigned to you</EmptyMessage>
           )}
         </AttendanceContent>
       </Content>

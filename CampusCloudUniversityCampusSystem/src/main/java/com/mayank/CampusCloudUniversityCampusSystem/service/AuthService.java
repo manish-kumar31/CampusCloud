@@ -27,34 +27,22 @@ public class AuthService {
         }
     }
 
-    /**
-     * NEW METHOD: Verifies token AND checks if the user has access to the requested resource.
-     * @param idToken Firebase JWT token
-     * @param requestedUserId The user ID the client is trying to access
-     * @throws Exception If token is invalid or access is denied
-     */
-    public void verifyTokenAndCheckAccess(String idToken, String requestedUserId) throws Exception {
+    public void verifyTokenAndCheckAccess(String idToken, String requestedFirebaseUid) throws Exception {
         try {
-            // 1. Verify token and decode
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
-            String tokenUserId = decodedToken.getUid(); // Firebase UID from token
+            String tokenFirebaseUid = decodedToken.getUid();
 
-            // 2. Fetch user from DB using Firebase UID
-            User user = userRepository.findByFirebaseUid(tokenUserId)
+            User user = userRepository.findByFirebaseUid(tokenFirebaseUid)
                     .orElseThrow(() -> new Exception("User not found in database"));
 
-            // 3. Check if the token's user matches the requested user ID
-            // (Assuming your User entity has getId() returning the MySQL user ID)
-            if (!user.getId().equals(requestedUserId)) {
+            if (!user.getFirebaseUid().equals(requestedFirebaseUid)) {
                 throw new Exception("Access denied: You can only access your own data");
             }
-
-            // 4. (Optional) Add role-based checks here if needed
-            // e.g., Admins can access any user's data:
-            // if (!user.getRole().equals("admin") && !user.getId().equals(requestedUserId)) { ... }
 
         } catch (Exception e) {
             throw new Exception("Access verification failed: " + e.getMessage());
         }
     }
+
+
 }

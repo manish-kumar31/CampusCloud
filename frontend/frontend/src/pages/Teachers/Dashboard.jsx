@@ -16,21 +16,40 @@ const TeacherDashboard = () => {
   const [studentCount, setStudentCount] = useState(0);
   const [teacherCount, setTeacherCount] = useState(0);
   const [classCount, setClassCount] = useState(0); // Optional: add endpoint for this later
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
+    const facultyUnivId = localStorage.getItem("facultyUnivId");
+    console.log("facultyUnivId being sent:", facultyUnivId); // Add this for debugging
+
     axios
-      .get("http://localhost:8080/api/AdminDashboard/students/count")
+      .get("http://localhost:8080/api/AdminDashboard/students/count", {
+        headers: {
+          "X-Faculty-UnivId": facultyUnivId,
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => setStudentCount(response.data))
       .catch((error) => console.error("Error fetching student count:", error));
 
     axios
-      .get("http://localhost:8080/api/AdminDashboard/faculty/count")
+      .get("http://localhost:8080/api/AdminDashboard/faculty/count", {
+        headers: {
+          "X-Faculty-UnivId": facultyUnivId,
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => setTeacherCount(response.data))
       .catch((error) => console.error("Error fetching teacher count:", error));
 
     // Example for class count (optional)
     axios
-      .get("http://localhost:8080/api/AdminDashboard/classes/count")
+      .get("http://localhost:8080/api/AdminDashboard/classes/count", {
+        headers: {
+          "X-Faculty-UnivId": facultyUnivId,
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => setClassCount(response.data))
       .catch((error) => console.error("Error fetching class count:", error));
   }, []);
@@ -38,7 +57,7 @@ const TeacherDashboard = () => {
   return (
     <TeacherDashboardContainer>
       <Sidebar />
-      <Content>
+      <Content $isOpen={isOpen}>
         <Section>
           <SectionTitle>Overview</SectionTitle>
           <CardContainer>

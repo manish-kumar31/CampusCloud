@@ -6,7 +6,7 @@ export const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: ${({ isOpen }) => (isOpen ? '250px' : '80px')};
+  width: ${({ $isOpen }) => ($isOpen ? '250px' : '80px')};
   width: 250px;
   height: 100%;
   background-color: #2c3e50; /* Dark blue background */
@@ -73,6 +73,6 @@ export const ToggleButton = styled.div`
 export const ToggleIcon = styled.span`
   color: white;
   font-size: 20px;
-  transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform: ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
   transition: transform 0.3s ease;
 `;

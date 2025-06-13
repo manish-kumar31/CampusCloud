@@ -47,7 +47,7 @@
 
         // One-to-Many with Attendance (attendance records marked by this faculty)
         @OneToMany(mappedBy = "faculty")
-        private List<Attendance> markedAttendances;
+        public List<Attendance> markedAttendances;
 
         @Column(nullable = true)
         private String password;

@@ -28,6 +28,9 @@ public class User {
     @Column(nullable = false)
     private String role;
 
+    @Column (nullable = true)
+    private String univId;
+
     @Column(nullable = true)
     private  String password;
 

@@ -33,7 +33,7 @@ const AdminDashboard = () => {
 
   const announcements = [
     { id: 1, text: "All students must submit their assignments by Friday." },
-    { id: 2, text: "Teacher’s workshop this weekend." },
+    { id: 2, text: "Teacher's workshop this weekend." },
   ];
 
   const studentPerformance = [
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
   return (
     <AdminDashboardContainer>
       <Sidebar />
-      <Content isOpen={isOpen}>
+      <Content $isOpen={isOpen}>
         <TopContent>
           <Section>
             <SectionTitle>Overview</SectionTitle>

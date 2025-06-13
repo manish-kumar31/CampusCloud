@@ -19,20 +19,26 @@ public class StudentController {
     @Autowired
     private AuthService authService;
 
-    @GetMapping("/{studentId}")
-    public ResponseEntity<Student> getStudentProfile(
-            @PathVariable String studentId,
+    // ✅ Fetch student by Firebase UID, secured by verifying token
+    @GetMapping("/{firebaseUid}")
+    public ResponseEntity<?> getStudentProfile(
+            @PathVariable String firebaseUid,
             @RequestHeader("Authorization") String authHeader) {
 
         try {
             String token = authHeader.replace("Bearer ", "");
-            authService.verifyTokenAndCheckAccess(token, studentId);
 
-            Student student = studentRepository.findByUnivId(studentId)
-                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            // ✅ Verify token, get user, and check access to this Firebase UID
+            authService.verifyTokenAndCheckAccess(token, firebaseUid);
+
+            // ✅ Fetch student details by Firebase UID
+            Student student = studentRepository.findByFirebaseUid(firebaseUid)
+                    .orElseThrow(() -> new RuntimeException("Student not found with provided Firebase UID"));
+
             return ResponseEntity.ok(student);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 }

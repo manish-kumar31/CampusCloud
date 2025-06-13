@@ -56,7 +56,7 @@ public class AdminService {
             stu.setRollNo(rollNo);
             stu.setUnivId(generateUnivId(stu.getName(),stu.getContactNo()));
 
-            User user = service.createUser(stu.getEmailId(),stu.getPassword(),stu.getName(),"student");
+            User user = service.createUser(stu.getEmailId(),stu.getPassword(),stu.getName(),"student",stu.getUnivId());
             stu.setFirebaseUid(user.getFirebaseUid());
         }
 
@@ -164,7 +164,7 @@ public class AdminService {
         savedStudent.setPassword(generatePassword(savedStudent.getDob()));
         savedStudent.setUnivId(generateUnivId(savedStudent.getName(),savedStudent.getContactNo()));
 
-        User user = service.createUser(savedStudent.getEmailId(),savedStudent.getPassword(),savedStudent.getName(),"student");
+        User user = service.createUser(savedStudent.getEmailId(),savedStudent.getPassword(),savedStudent.getName(),"student",savedStudent.getUnivId());
         savedStudent.setFirebaseUid(user.getFirebaseUid());
         return studentRepo.save(savedStudent);
 
@@ -177,7 +177,7 @@ public class AdminService {
         Faculty savedFaculty =  facultyRepo.save(faculty);
         savedFaculty.setPassword(generatePassword(savedFaculty.getDob()));
         savedFaculty.setUnivId(generateUnivIdFaculty(savedFaculty.getName(),savedFaculty.getContactNo()));
-        User user = service.createUser(savedFaculty.getEmailId(),savedFaculty.getPassword(),savedFaculty.getName(),"faculty");
+        User user = service.createUser(savedFaculty.getEmailId(),savedFaculty.getPassword(),savedFaculty.getName(),"faculty",savedFaculty.getUnivId());
         savedFaculty.setFirebaseUid(user.getFirebaseUid());
         return facultyRepo.save(savedFaculty);
 

@@ -15,16 +15,20 @@ import {
 const StudentDashboard = () => {
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
         const token = localStorage.getItem("authToken");
-        const studentId = localStorage.getItem("userId");
+        const firebaseUid = localStorage.getItem("userFirebaseId");
 
-        // Fetch fresh data from API
+        if (!token || !firebaseUid) {
+          throw new Error("Authentication token or Firebase UID not found.");
+        }
+
         const response = await axios.get(
-          `http://localhost:8080/api/students/${studentId}`,
+          `http://localhost:8080/api/students/${firebaseUid}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -33,13 +37,18 @@ const StudentDashboard = () => {
         );
 
         setStudentData(response.data);
+
+        // ✅ Refresh cached data with latest profile every time
         localStorage.setItem("userProfile", JSON.stringify(response.data));
-      } catch (error) {
-        console.error("Error fetching student data:", error);
-        // Fallback to cached data if available
+      } catch (err) {
+        console.error("Error fetching student data:", err);
+        setError(err.message || "Failed to fetch student data.");
+
+        // ✅ Fallback to cached data only if API fails
         const cachedProfile = localStorage.getItem("userProfile");
         if (cachedProfile) {
           setStudentData(JSON.parse(cachedProfile));
+          setError(null); // ✅ Clear error if fallback works
         }
       } finally {
         setLoading(false);
@@ -52,38 +61,49 @@ const StudentDashboard = () => {
   if (loading) return <div>Loading dashboard...</div>;
 
   return (
-    <DashboardContainer>
-      <Sidebar />
-      <Content>
-        <Section>
-          <SectionTitle>
-            Welcome, {studentData?.name || localStorage.getItem("userName")}!
-          </SectionTitle>
+    <>
+      {error && (
+        <div style={{ color: "red", marginBottom: "1rem" }}>
+          {error}
+          <br />
+          Please login again if the problem persists.
+        </div>
+      )}
 
-          <CardContainer>
-            <Card>
-              <CardTitle>Academic Information</CardTitle>
-              <CardContent>
-                <p>ID: {studentData?.univId || "N/A"}</p>
-                <p>Program: {studentData?.program || "N/A"}</p>
-                <p>Semester: {studentData?.semester || "N/A"}</p>
-              </CardContent>
-            </Card>
+      {studentData ? (
+        <DashboardContainer>
+          <Sidebar />
+          <Content>
+            <Section>
+              <SectionTitle>
+                Welcome, {studentData?.name || "Student"}!
+              </SectionTitle>
+              <CardContainer>
+                <Card>
+                  <CardTitle>Academic Information</CardTitle>
+                  <CardContent>
+                    <div>University ID: {studentData?.univId || "N/A"}</div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardTitle>Contact Information</CardTitle>
-              <CardContent>
-                <p>
-                  Email:{" "}
-                  {studentData?.email || localStorage.getItem("userEmail")}
-                </p>
-                <p>Phone: {studentData?.phone || "N/A"}</p>
-              </CardContent>
-            </Card>
-          </CardContainer>
-        </Section>
-      </Content>
-    </DashboardContainer>
+                <Card>
+                  <CardTitle>Contact Information</CardTitle>
+                  <CardContent>
+                    <div>Email: {studentData?.emailId || "N/A"}</div>
+                    <div>Phone: {studentData?.contactNo || "N/A"}</div>
+                    <div>Address: {studentData?.address || "N/A"}</div>
+                  </CardContent>
+                </Card>
+              </CardContainer>
+            </Section>
+          </Content>
+        </DashboardContainer>
+      ) : (
+        <div style={{ color: "red" }}>
+          Unable to load your profile. Please login again.
+        </div>
+      )}
+    </>
   );
 };
 
