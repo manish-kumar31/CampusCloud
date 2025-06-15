@@ -3,6 +3,7 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Faculty;
 import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AdminService;
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +27,22 @@ public class AdminController {
         return  ResponseEntity.ok(service.uploadDetailsOfStudentsBulk(file));
     }
 
-    @PostMapping ("/uploadStudent")
-    public ResponseEntity <?> uploadStudentDetail (@RequestBody Student student){
-
+    @PostMapping("/uploadStudent")
+    public ResponseEntity<?> uploadStudentDetail(@RequestBody Student student) {
         try {
-            Student student1 = service.uploadStudentDetail(student);
-            return new ResponseEntity <> (student1, HttpStatus.OK);
-        }
-        catch (Exception e){
-            return new  ResponseEntity <> (e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            // Add validation for required fields
+            if (student.getName() == null || student.getName().isEmpty()) {
+                return ResponseEntity.badRequest().body("Name is required");
+            }
+            if (student.getEmail() == null || student.getEmail().isEmpty()) {
+                return ResponseEntity.badRequest().body("Email is required");
+            }
 
+            Student student1 = service.uploadStudentDetail(student);
+            return new ResponseEntity<>(student1, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
@@ -89,11 +95,11 @@ public class AdminController {
 
     }
 
-    @GetMapping("/faculty/{univId}")
-    public ResponseEntity <?> getFacultyByUnivId (@PathVariable String univId){
+    @GetMapping("/faculty/{emailId}")
+    public ResponseEntity <?> getFacultyByUnivId (@PathVariable String emailId){
 
         try {
-            Optional <Faculty> faculty  = service.getFacultyByUnivId(univId);
+            Optional <Faculty> faculty  = service.getFacultyByUnivId(emailId);
             return new ResponseEntity <>(faculty,HttpStatus.OK);
         }
         catch (Exception e){
@@ -101,11 +107,11 @@ public class AdminController {
         }
     }
 
-    @PutMapping ("/faculty/{univId}")
-    public ResponseEntity <?> updateFaculty (@RequestBody Faculty faculty,@PathVariable String univId){
+    @PutMapping ("/faculty/{emailId}")
+    public ResponseEntity <?> updateFaculty (@RequestBody Faculty faculty,@PathVariable String emailId){
 
         try {
-            Faculty faculty1 = service.updateFaculty (univId,faculty);
+            Faculty faculty1 = service.updateFaculty (emailId,faculty);
             return new ResponseEntity <>(faculty1,HttpStatus.OK);
         }
         catch (Exception e){
@@ -113,17 +119,16 @@ public class AdminController {
         }
     }
 
-    @DeleteMapping("/faculty/{univId}")
-    public ResponseEntity <String> deleteFaculty (@PathVariable String univId){
+    @DeleteMapping("/faculty/{emailId}")
+    public ResponseEntity <?> deleteFaculty (@PathVariable String emailId){
 
-        if (service.deleteFaculty(univId)){
-            return new ResponseEntity<>("Deleted",HttpStatus.OK);
+        try {
+            boolean result =  service.deleteFaculty(emailId);
+            return new ResponseEntity<>(result,HttpStatus.OK);
         }
-
-        else{
-            return new ResponseEntity<>("Faculty not found",HttpStatus.NOT_FOUND);
+        catch(Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 
 }

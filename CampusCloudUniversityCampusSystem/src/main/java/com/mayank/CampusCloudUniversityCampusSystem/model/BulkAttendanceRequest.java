@@ -7,14 +7,14 @@ import java.util.List;
 
 @Data
 public class BulkAttendanceRequest {
-    private String facultyUnivId;
+    private String facultyEmail;
     private Long subjectId;
     private LocalDate date;
     private List<StudentAttendance> studentAttendances;
 
     @Data
     public static class StudentAttendance {
-        private String studentUnivId;
+        private String studentEmail;
         private boolean present;
         private String remarks;
     }

@@ -2,10 +2,10 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-import com.mayank.CampusCloudUniversityCampusSystem.model.EnrollmentRequest;
-import com.mayank.CampusCloudUniversityCampusSystem.model.SubjectEnrollment;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
-import com.mayank.CampusCloudUniversityCampusSystem.service.SubjectEnrollmentService;
+import com.mayank.CampusCloudUniversityCampusSystem.model.*;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.*;
+import com.mayank.CampusCloudUniversityCampusSystem.service.*;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,51 +18,86 @@ import java.util.List;
 public class SubjectEnrollmentController {
 
     @Autowired
-    private SubjectEnrollmentService enrollmentService;
-
-    @Autowired
     private SubjectEnrollmentRepo subjectEnrollmentRepo;
 
-    @PostMapping("/create-for-all")
-    public ResponseEntity<?> createForAllStudents(@RequestBody EnrollmentRequest request) {
+    @Autowired
+    private FacultyRepo facultyRepo;
+
+    @Autowired
+    private StudentRepo studentRepo;
+
+    @Autowired
+    private SubjectEnrollmentService enrollmentService;
+
+    // Get all enrollments
+    @GetMapping
+    public ResponseEntity<?> getAllEnrollments() {
         try {
-            return ResponseEntity.ok(enrollmentService.createEnrollmentWithAllStudents(request));
+            List<SubjectEnrollment> enrollments = subjectEnrollmentRepo.findAll();
+            return ResponseEntity.ok(enrollments);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error fetching enrollments: " + e.getMessage());
+        }
+    }
+
+    // Create enrollment for all students
+    @PostMapping("/create-for-all")
+    public ResponseEntity<?> createEnrollmentForAllStudents(@RequestBody EnrollmentRequest request) {
+        try {
+            // Validate request
+            if (request.getSubjectName() == null || request.getSubjectName().isEmpty()) {
+                return ResponseEntity.badRequest().body("Subject name is required");
+            }
+            if (request.getSubjectCode() == null || request.getSubjectCode().isEmpty()) {
+                return ResponseEntity.badRequest().body("Subject code is required");
+            }
+            if (request.getEmailId() == null || request.getEmailId().isEmpty()) {
+                return ResponseEntity.badRequest().body("Faculty email  ID is required");
+            }
+
+            SubjectEnrollment enrollment = enrollmentService.createEnrollmentForAllStudents(request);
+            return ResponseEntity.ok(enrollment);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error creating enrollment: " + e.getMessage());
+        }
+    }
+
+    // Get subjects by faculty (existing)
+    @GetMapping("/faculty")
+    public ResponseEntity<?> getSubjectsByFaculty(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String facultyEmail = extractEmailFromToken(authHeader);
+            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByFaculty_Email(facultyEmail);
+            return ResponseEntity.ok(subjects);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    private String extractEmailFromToken(String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+            return decodedToken.getEmail();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid token: " + e.getMessage());
+        }
+    }
+    // Add to SubjectEnrollmentController.java
+    @GetMapping("/{subjectId}")
+    public ResponseEntity<?> getEnrollmentById(@PathVariable Long subjectId) {
+        try {
+            SubjectEnrollment enrollment = subjectEnrollmentRepo.findById(subjectId)
+                    .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+
+            // Initialize the enrolledStudents collection
+            Hibernate.initialize(enrollment.getEnrolledStudents());
+
+            return ResponseEntity.ok(enrollment);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @GetMapping("/faculty")
-    public ResponseEntity<?> getSubjectsByFaculty(@RequestHeader("Authorization") String authHeader) {
-        try {
-            String facultyEmail = extractFacultyEmailFromToken(authHeader);
-            System.out.println("Extracted faculty email: " + facultyEmail); // Debug log
-
-            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByFaculty_UnivId(facultyEmail);
-            System.out.println("Found subjects count: " + subjects.size()); // Debug log
-
-            return ResponseEntity.ok(subjects);
-        } catch (Exception e) {
-            System.err.println("Error fetching subjects: " + e.getMessage());
-            return ResponseEntity.badRequest().body("Error fetching subjects: " + e.getMessage());
-        }
-    }
-
-    private String extractFacultyEmailFromToken(String authHeader) {
-        try {
-            String token = authHeader.replace("Bearer ", "");
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-
-            // Use email instead of UID to match your database records
-            String facultyEmail = decodedToken.getEmail();
-
-            if (facultyEmail == null || facultyEmail.isEmpty()) {
-                throw new RuntimeException("Faculty email not found in token");
-            }
-
-            return facultyEmail.toLowerCase(); // Ensure case-insensitive matching
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid or expired Firebase token: " + e.getMessage());
-        }
-    }
 }

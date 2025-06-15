@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const StudentsContainer = styled.div`
   display: flex;
@@ -22,7 +22,50 @@ export const FormSelect = styled.select`
   }
 `;
 
-
+export const FeedbackMessage = styled.div`
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin: 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: ${(props) => {
+    switch (props.variant) {
+      case "success":
+        return "#d4edda";
+      case "error":
+        return "#f8d7da";
+      case "warning":
+        return "#fff3cd";
+      default:
+        return "#e2e3e5";
+    }
+  }};
+  color: ${(props) => {
+    switch (props.variant) {
+      case "success":
+        return "#155724";
+      case "error":
+        return "#721c24";
+      case "warning":
+        return "#856404";
+      default:
+        return "#383d41";
+    }
+  }};
+  border: 1px solid
+    ${(props) => {
+      switch (props.variant) {
+        case "success":
+          return "#c3e6cb";
+        case "error":
+          return "#f5c6cb";
+        case "warning":
+          return "#ffeeba";
+        default:
+          return "#d6d8db";
+      }
+    }};
+`;
 export const Content = styled.div`
   flex: 1;
   padding: 24px;
@@ -167,11 +210,11 @@ export const ActionButton = styled.button`
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
-  background-color: ${({ active }) => (active ? '#3498db' : '#e9ecef')};
-  color: ${({ active }) => (active ? 'white' : '#495057')};
+  background-color: ${({ active }) => (active ? "#3498db" : "#e9ecef")};
+  color: ${({ active }) => (active ? "white" : "#495057")};
   transition: all 0.3s;
 
   &:hover {
-    background-color: ${({ active }) => (active ? '#2980b9' : '#dee2e6')};
+    background-color: ${({ active }) => (active ? "#2980b9" : "#dee2e6")};
   }
 `;

@@ -1,5 +1,9 @@
 package com.mayank.CampusCloudUniversityCampusSystem.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Student {
 
     @Id
@@ -36,7 +40,7 @@ public class Student {
     @Column(nullable = true)
     private String rollNo;
 
-    @Column(unique = true)
+    @Column(unique = true,nullable = true)
     private String firebaseUid;
 
     @Column(nullable = true)
@@ -59,7 +63,8 @@ public class Student {
     private String parentOccupation;
 
     @Email
-    private String emailId;
+    @Column(unique = true,name = "email")
+    private String email;
 
     @Column(nullable = true,unique = true,name= "univ_id")
     private String univId;
@@ -73,5 +78,9 @@ public class Student {
     @Column(nullable = true)
     private String password;
 
+    public void addEnrollment(SubjectEnrollment enrollment) {
+        this.enrolledStudents.add(enrollment);
+        enrollment.getEnrolledStudents().add(this);
+    }
 
 }

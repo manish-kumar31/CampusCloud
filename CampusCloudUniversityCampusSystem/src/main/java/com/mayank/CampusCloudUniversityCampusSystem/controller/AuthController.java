@@ -16,11 +16,10 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-    private final StudentService studentService;
 
-    public AuthController(AuthService authService, StudentService studentService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.studentService = studentService;
+
     }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody TokenRequest tokenRequest) {

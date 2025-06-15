@@ -21,33 +21,38 @@ import {
   AttendanceSubject,
 } from "../../styles/AttendanceStyles";
 
+const API_BASE_URL = "http://localhost:8080/api";
+
 const AttendanceSection = () => {
   const [attendance, setAttendance] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("all");
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState({
-    attendance: true,
-    subjects: true,
-    stats: true,
+    attendance: false,
+    subjects: false,
+    stats: false,
   });
   const [error, setError] = useState(null);
-  const [stats, setStats] = useState(null);
 
+  const authConfig = {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
+  };
+
+  // Fetch all attendance records for student
   const fetchAttendance = async () => {
     try {
       setLoading((prev) => ({ ...prev, attendance: true }));
       setError(null);
 
-      const studentUnivId = localStorage.getItem("userUnivId");
-      if (!studentUnivId) throw new Error("Student ID not found");
+      const studentEmail = localStorage.getItem("userEmail");
+      if (!studentEmail) throw new Error("Student email not found");
 
       const response = await axios.get(
-        `http://localhost:8080/api/attendance/student/${studentUnivId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
+        `${API_BASE_URL}/attendance/student/${studentEmail}`,
+        authConfig
       );
 
       setAttendance(response.data);
@@ -58,49 +63,43 @@ const AttendanceSection = () => {
     }
   };
 
+  // Fetch subjects student is enrolled in
   const fetchSubjects = async () => {
     try {
       setLoading((prev) => ({ ...prev, subjects: true }));
 
-      const studentUnivId = localStorage.getItem("userUnivId");
-      if (!studentUnivId) throw new Error("Student ID not found");
+      const studentEmail = localStorage.getItem("userEmail");
+      if (!studentEmail) throw new Error("Student email not found");
 
       const response = await axios.get(
-        `http://localhost:8080/api/subjects/student/${studentUnivId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
+        `${API_BASE_URL}/students/${studentEmail}/subjects`,
+        authConfig
       );
 
       setSubjects(response.data);
     } catch (err) {
-      console.error("Error fetching subjects:", err);
+      console.error("Failed to fetch subjects:", err);
     } finally {
       setLoading((prev) => ({ ...prev, subjects: false }));
     }
   };
 
-  const fetchAttendanceStats = async () => {
+  // Fetch attendance statistics
+  const fetchStats = async () => {
     try {
       setLoading((prev) => ({ ...prev, stats: true }));
 
-      const studentUnivId = localStorage.getItem("userUnivId");
-      if (!studentUnivId) throw new Error("Student ID not found");
+      const studentEmail = localStorage.getItem("userEmail");
+      if (!studentEmail) throw new Error("Student email not found");
 
       const response = await axios.get(
-        `http://localhost:8080/api/attendance/stats/student/${studentUnivId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
+        `${API_BASE_URL}/students/${studentEmail}/attendance-summary`,
+        authConfig
       );
 
       setStats(response.data);
     } catch (err) {
-      console.error("Error fetching stats:", err);
+      console.error("Failed to fetch stats:", err);
     } finally {
       setLoading((prev) => ({ ...prev, stats: false }));
     }
@@ -109,13 +108,13 @@ const AttendanceSection = () => {
   useEffect(() => {
     fetchAttendance();
     fetchSubjects();
-    fetchAttendanceStats();
+    fetchStats();
   }, []);
 
   const filteredAttendance =
     selectedSubject === "all"
       ? attendance
-      : attendance.filter((record) => record.subject.id === selectedSubject);
+      : attendance.filter((record) => record.subject?.id === selectedSubject);
 
   return (
     <AttendanceContainer>
@@ -129,15 +128,19 @@ const AttendanceSection = () => {
           <StatsContainer>
             <StatsItem>
               <StatsTitle>Overall Attendance</StatsTitle>
-              <StatsValue>{stats.attendancePercentage}%</StatsValue>
+              <StatsValue>{stats.overallPercentage}%</StatsValue>
             </StatsItem>
             <StatsItem>
-              <StatsTitle>Present</StatsTitle>
-              <StatsValue>{stats.totalPresent}</StatsValue>
+              <StatsTitle>From Date</StatsTitle>
+              <StatsValue>
+                {new Date(stats.startDate).toLocaleDateString()}
+              </StatsValue>
             </StatsItem>
             <StatsItem>
-              <StatsTitle>Total Classes</StatsTitle>
-              <StatsValue>{stats.totalClasses}</StatsValue>
+              <StatsTitle>To Date</StatsTitle>
+              <StatsValue>
+                {new Date(stats.endDate).toLocaleDateString()}
+              </StatsValue>
             </StatsItem>
           </StatsContainer>
         )}
@@ -152,7 +155,7 @@ const AttendanceSection = () => {
             <option value="all">All Subjects</option>
             {subjects.map((subject) => (
               <option key={subject.id} value={subject.id}>
-                {subject.subjectName}
+                {subject.subjectName} ({subject.subjectCode})
               </option>
             ))}
           </SubjectFilter>
@@ -172,7 +175,8 @@ const AttendanceSection = () => {
                   {new Date(record.date).toLocaleDateString()}
                 </AttendanceDate>
                 <AttendanceSubject>
-                  {record.subject.subjectName} ({record.subject.subjectCode})
+                  {record.subject?.subjectName || "Unknown Subject"}(
+                  {record.subject?.subjectCode || "N/A"})
                 </AttendanceSubject>
                 <AttendanceStatus
                   className={record.present ? "present" : "absent"}

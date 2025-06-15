@@ -9,6 +9,7 @@ import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.SubjectEnrollmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,17 +25,30 @@ public class SubjectEnrollmentService {
     @Autowired
     private FacultyRepo facultyRepo;
 
-    public SubjectEnrollment createEnrollmentWithAllStudents(EnrollmentRequest request) {
-        Faculty faculty = facultyRepo.findFacultyByUnivId(request.getUnivId()).orElseThrow();
+    @Transactional
+    public SubjectEnrollment createEnrollmentForAllStudents(EnrollmentRequest request) {
 
-        List<Student> allStudents = studentRepo.findAll();
+        Faculty faculty = facultyRepo.findByEmail(request.getEmailId())
+                .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + request.getEmailId()));
 
+        // Create new subject enrollment
         SubjectEnrollment enrollment = new SubjectEnrollment();
         enrollment.setSubjectName(request.getSubjectName());
         enrollment.setSubjectCode(request.getSubjectCode());
         enrollment.setCredits(request.getCredits());
         enrollment.setFaculty(faculty);
-        enrollment.setEnrolledStudents(allStudents);
+
+        // Get all students and enroll them
+        List<Student> students = studentRepo.findAll();
+        if (students.isEmpty()) {
+            throw new RuntimeException("No students available for enrollment");
+        }
+
+        // 4. Establish bidirectional relationship
+        enrollment.setEnrolledStudents(students);
+        students.forEach(student -> student.getEnrolledStudents().add(enrollment));
+
+        // 5. Save the enrollment
 
         return subjectRepo.save(enrollment);
     }

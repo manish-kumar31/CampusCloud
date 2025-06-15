@@ -44,46 +44,20 @@ const SignIn = () => {
 
       if (response.data.status === "success") {
         localStorage.setItem("authToken", idToken);
-        localStorage.setItem("userFirebaseId", response.data.firebaseUid);
         localStorage.setItem("userRole", response.data.role);
-        localStorage.setItem("userUnivId", response.data.univId);
-        // ✅ Clear old cached profile before navigating to dashboard
-        localStorage.removeItem("userProfile");
+        localStorage.setItem("userEmail", response.data.email);
+        localStorage.setItem("userName", response.data.name);
 
         navigate(
-          response.data.redirectUrl || `/${response.data.role}/dashboard`
+          response.data.redirectUrl ||
+            `/${response.data.role.toLowerCase}/dashboard`
         );
-        window.location.reload(); // ✅ Ensures StudentDashboard loads freshly
-      } else {
-        setError("Invalid credentials");
       }
     } catch (error) {
-      handleAuthError(error);
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleAuthError = (error) => {
-    let errorMessage = error.message || "Login failed. Please try again.";
-
-    if (
-      error.code === "auth/wrong-password" ||
-      error.code === "auth/user-not-found"
-    ) {
-      errorMessage =
-        "Invalid email or password. Would you like to reset your password?";
-      if (window.confirm(errorMessage)) {
-        handlePasswordReset();
-      }
-      return;
-    } else if (error.code === "auth/network-request-failed") {
-      errorMessage = "Network error. Please check your connection.";
-    } else if (error.code === "auth/invalid-email") {
-      errorMessage = "Invalid email format.";
-    }
-
-    setError(errorMessage);
   };
 
   const handlePasswordReset = async () => {

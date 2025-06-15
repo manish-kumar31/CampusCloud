@@ -28,20 +28,17 @@ import {
 const API_BASE_URL = "http://localhost:8080/api";
 
 const CheckAttendanceSection = () => {
-  const [state, setState] = useState({
-    students: [],
-    subjects: [],
-    selectedSubject: null,
-    attendanceData: {},
-    date: new Date().toISOString().split("T")[0],
-    stats: null,
-  });
-
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [attendanceData, setAttendanceData] = useState({});
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState({
     subjects: false,
     students: false,
-    submission: false,
     stats: false,
+    submission: false,
   });
 
   const authConfig = {
@@ -50,189 +47,164 @@ const CheckAttendanceSection = () => {
     },
   };
 
+  // Fetch subjects taught by the faculty
   const fetchSubjects = useCallback(async () => {
     try {
       setLoading((prev) => ({ ...prev, subjects: true }));
-
-      // Debug: Check what's actually in localStorage
-      console.log(
-        "Current faculty ID in localStorage:",
-        localStorage.getItem("userUnivId")
-      );
-
       const response = await axios.get(
         `${API_BASE_URL}/enrollments/faculty`,
         authConfig
       );
-
-      // Debug: Check what the backend returned
-      console.log("Subjects from API:", response.data);
-
-      setState((prev) => ({
-        ...prev,
-        subjects: response.data,
-        selectedSubject: response.data.length > 0 ? response.data[0].id : null,
-      }));
+      setSubjects(response.data);
+      if (response.data.length > 0) {
+        setSelectedSubject(response.data[0].id);
+      }
     } catch (err) {
-      console.error("Error fetching subjects:", err);
-      toast.error(err.response?.data?.message || err.message);
+      toast.error(
+        "Failed to fetch subjects: " +
+          (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading((prev) => ({ ...prev, subjects: false }));
     }
   }, []);
 
+  // Fetch students enrolled in selected subject
   const fetchStudents = useCallback(async () => {
+    if (!selectedSubject) return;
     try {
-      if (!state.selectedSubject) return;
       setLoading((prev) => ({ ...prev, students: true }));
+      setStudents([]);
+      setAttendanceData({});
 
       const response = await axios.get(
-        `${API_BASE_URL}/subjects/${state.selectedSubject}/students`,
+        `${API_BASE_URL}/enrollments/${selectedSubject}`,
         authConfig
       );
 
-      setState((prev) => ({ ...prev, students: response.data }));
+      // Check if students are returned properly
+      console.log("Subject enrollment response:", response.data);
+
+      if (
+        response.data.enrolledStudents &&
+        response.data.enrolledStudents.length > 0
+      ) {
+        setStudents(response.data.enrolledStudents);
+      } else {
+        toast.info("No students enrolled in this subject");
+        setStudents([]);
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message);
+      console.error("Error fetching students:", err);
+      toast.error(
+        "Failed to fetch students: " +
+          (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading((prev) => ({ ...prev, students: false }));
     }
-  }, [state.selectedSubject]);
+  }, [selectedSubject]);
 
+  // Load existing attendance for selected date
   const loadExistingAttendance = useCallback(async () => {
-    try {
-      if (!state.selectedSubject || state.students.length === 0) return;
+    if (!selectedSubject || students.length === 0) return;
 
+    try {
       const response = await axios.get(
-        `${API_BASE_URL}/attendance/subject/${state.selectedSubject}/date/${state.date}`,
+        `${API_BASE_URL}/attendance/subject/${selectedSubject}/date/${date}`,
         authConfig
       );
 
-      const existingData = {};
+      const newAttendanceData = {};
       response.data.forEach((record) => {
-        existingData[record.student.univId] = {
-          studentId: record.student.univId,
-          subjectId: state.selectedSubject,
-          date: state.date,
-          isPresent: record.present,
+        // Use student email as key
+        newAttendanceData[record.student.email] = {
+          present: record.present,
           remarks: record.remarks || "",
         };
       });
 
-      // Initialize attendance data for all students
-      const initializedData = { ...existingData };
-      state.students.forEach((student) => {
-        if (!initializedData[student.univId]) {
-          initializedData[student.univId] = {
-            studentId: student.univId,
-            subjectId: state.selectedSubject,
-            date: state.date,
-            isPresent: null,
+      // Initialize all students
+      students.forEach((student) => {
+        if (!newAttendanceData[student.email]) {
+          newAttendanceData[student.email] = {
+            present: null,
             remarks: "",
           };
         }
       });
 
-      setState((prev) => ({ ...prev, attendanceData: initializedData }));
+      setAttendanceData(newAttendanceData);
     } catch (err) {
-      if (err.response?.status !== 404) {
+      if (err.response?.status === 404) {
+        // No attendance exists for this date - initialize empty
+        const emptyData = {};
+        students.forEach((student) => {
+          emptyData[student.email] = {
+            present: null,
+            remarks: "",
+          };
+        });
+        setAttendanceData(emptyData);
+      } else {
         toast.error(
-          err.response?.data?.message || "Failed to load attendance data"
+          "Failed to load attendance: " +
+            (err.response?.data?.message || err.message)
         );
       }
     }
-  }, [state.selectedSubject, state.students, state.date]);
+  }, [selectedSubject, students, date]);
 
-  const fetchAttendanceStats = useCallback(async () => {
+  // Fetch attendance statistics
+  const fetchStats = useCallback(async () => {
+    if (!selectedSubject) return;
     try {
-      if (!state.selectedSubject) return;
       setLoading((prev) => ({ ...prev, stats: true }));
-
       const response = await axios.get(
-        `${API_BASE_URL}/attendance/stats/subject/${state.selectedSubject}`,
+        `${API_BASE_URL}/attendance/stats/subject/${selectedSubject}`,
         authConfig
       );
-
-      setState((prev) => ({ ...prev, stats: response.data }));
+      setStats(response.data);
     } catch (err) {
-      console.error("Failed to fetch stats:", err);
+      toast.error(
+        "Failed to fetch stats: " + (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading((prev) => ({ ...prev, stats: false }));
     }
-  }, [state.selectedSubject]);
+  }, [selectedSubject]);
 
-  const handleStatusChange = (studentId, isPresent) => {
-    setState((prev) => ({
-      ...prev,
-      attendanceData: {
-        ...prev.attendanceData,
-        [studentId]: {
-          ...prev.attendanceData[studentId],
-          studentId,
-          subjectId: prev.selectedSubject,
-          date: prev.date,
-          isPresent,
-          remarks: prev.attendanceData[studentId]?.remarks || "",
-        },
-      },
-    }));
-  };
-
-  const handleRemarksChange = (studentId, remarks) => {
-    setState((prev) => ({
-      ...prev,
-      attendanceData: {
-        ...prev.attendanceData,
-        [studentId]: {
-          ...prev.attendanceData[studentId],
-          remarks,
-        },
-      },
-    }));
-  };
-
+  // Handle attendance submission
   const handleSubmit = async () => {
     try {
-      const facultyUnivId = localStorage.getItem("userUnivId");
-      if (!facultyUnivId) throw new Error("Faculty ID not found");
-
-      const allMarked = state.students.every(
-        (student) => state.attendanceData[student.univId]?.isPresent !== null
-      );
-
-      if (!allMarked) {
-        return toast.warn("Please mark attendance for all students.");
-      }
-
       setLoading((prev) => ({ ...prev, submission: true }));
 
-      await axios.post(
-        `${API_BASE_URL}/attendance/bulk`,
-        {
-          facultyUnivId,
-          subjectId: state.selectedSubject,
-          date: state.date,
-          studentAttendances: Object.values(state.attendanceData).map(
-            (record) => ({
-              studentUnivId: record.studentId,
-              present: record.isPresent,
-              remarks: record.remarks,
-            })
-          ),
-        },
-        {
-          ...authConfig,
-          headers: {
-            ...authConfig.headers,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const facultyEmail = localStorage.getItem("userEmail");
+      if (!facultyEmail) throw new Error("Faculty email not found");
+
+      // Prepare bulk attendance request
+      const studentAttendances = students.map((student) => ({
+        studentEmail: student.email,
+        present: attendanceData[student.email]?.present || false,
+        remarks: attendanceData[student.email]?.remarks || "",
+      }));
+
+      const request = {
+        facultyEmail,
+        subjectId: selectedSubject,
+        date,
+        studentAttendances,
+      };
+
+      await axios.post(`${API_BASE_URL}/attendance/bulk`, request, authConfig);
 
       toast.success("Attendance submitted successfully!");
-      fetchAttendanceStats();
+      fetchStats();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message);
+      console.error("Submission error:", err);
+      toast.error(
+        "Submission failed: " + (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading((prev) => ({ ...prev, submission: false }));
     }
@@ -243,23 +215,20 @@ const CheckAttendanceSection = () => {
     fetchSubjects();
   }, [fetchSubjects]);
 
-  // Fetch students and attendance when subject or date changes
+  // When subject changes, fetch students and stats
   useEffect(() => {
-    if (state.selectedSubject) {
-      const fetchData = async () => {
-        await fetchStudents();
-        await loadExistingAttendance();
-        await fetchAttendanceStats();
-      };
-      fetchData();
+    if (selectedSubject) {
+      fetchStudents();
+      fetchStats();
     }
-  }, [
-    state.selectedSubject,
-    state.date,
-    fetchStudents,
-    loadExistingAttendance,
-    fetchAttendanceStats,
-  ]);
+  }, [selectedSubject, fetchStudents, fetchStats]);
+
+  // When students or date changes, load attendance
+  useEffect(() => {
+    if (students.length > 0) {
+      loadExistingAttendance();
+    }
+  }, [students, date, loadExistingAttendance]);
 
   return (
     <AttendanceContainer>
@@ -267,26 +236,21 @@ const CheckAttendanceSection = () => {
       <Content>
         <AttendanceContent>
           <AttendanceHeader>
-            Mark Attendance - {new Date(state.date).toLocaleDateString()}
+            Mark Attendance - {new Date(date).toLocaleDateString()}
           </AttendanceHeader>
 
           <ToastContainer position="top-center" autoClose={3000} />
 
           {loading.subjects ? (
             <LoadingMessage>Loading subjects...</LoadingMessage>
-          ) : state.subjects.length > 0 ? (
+          ) : subjects.length > 0 ? (
             <>
               <SubjectSelector
-                value={state.selectedSubject || ""}
-                onChange={(e) =>
-                  setState((prev) => ({
-                    ...prev,
-                    selectedSubject: e.target.value,
-                  }))
-                }
+                value={selectedSubject || ""}
+                onChange={(e) => setSelectedSubject(e.target.value)}
                 disabled={loading.subjects || loading.students}
               >
-                {state.subjects.map((subject) => (
+                {subjects.map((subject) => (
                   <option key={subject.id} value={subject.id}>
                     {subject.subjectName} ({subject.subjectCode})
                   </option>
@@ -295,38 +259,35 @@ const CheckAttendanceSection = () => {
 
               <DatePicker
                 type="date"
-                value={state.date}
-                onChange={(e) =>
-                  setState((prev) => ({ ...prev, date: e.target.value }))
-                }
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 max={new Date().toISOString().split("T")[0]}
-                disabled={loading.students}
               />
 
-              {state.stats && (
+              {stats && (
                 <StatsContainer>
                   <StatsItem>
                     <StatsTitle>Total Classes</StatsTitle>
-                    <StatsValue>{state.stats.totalClasses}</StatsValue>
+                    <StatsValue>{stats.totalClasses}</StatsValue>
                   </StatsItem>
                   <StatsItem>
                     <StatsTitle>Average Attendance</StatsTitle>
-                    <StatsValue>{state.stats.attendancePercentage}%</StatsValue>
+                    <StatsValue>{stats.attendancePercentage}%</StatsValue>
                   </StatsItem>
                 </StatsContainer>
               )}
 
               {loading.students ? (
                 <LoadingMessage>Loading students...</LoadingMessage>
-              ) : state.students.length === 0 ? (
+              ) : students.length === 0 ? (
                 <EmptyMessage>
                   No students enrolled in this subject
                 </EmptyMessage>
               ) : (
                 <>
                   <AttendanceList>
-                    {state.students.map((student) => (
-                      <React.Fragment key={student.univId}>
+                    {students.map((student) => (
+                      <React.Fragment key={student.email}>
                         <AttendanceItem>
                           <StudentName>
                             {student.name} ({student.rollNo || student.univId})
@@ -336,14 +297,20 @@ const CheckAttendanceSection = () => {
                             <CheckboxLabel>
                               <input
                                 type="radio"
-                                name={`attendance-${student.univId}`}
+                                name={`attendance-${student.email}`}
                                 checked={
-                                  state.attendanceData[student.univId]
-                                    ?.isPresent === true
+                                  attendanceData[student.email]?.present ===
+                                  true
                                 }
-                                onChange={() =>
-                                  handleStatusChange(student.univId, true)
-                                }
+                                onChange={() => {
+                                  setAttendanceData((prev) => ({
+                                    ...prev,
+                                    [student.email]: {
+                                      ...prev[student.email],
+                                      present: true,
+                                    },
+                                  }));
+                                }}
                               />
                               Present
                             </CheckboxLabel>
@@ -351,14 +318,20 @@ const CheckAttendanceSection = () => {
                             <CheckboxLabel>
                               <input
                                 type="radio"
-                                name={`attendance-${student.univId}`}
+                                name={`attendance-${student.email}`}
                                 checked={
-                                  state.attendanceData[student.univId]
-                                    ?.isPresent === false
+                                  attendanceData[student.email]?.present ===
+                                  false
                                 }
-                                onChange={() =>
-                                  handleStatusChange(student.univId, false)
-                                }
+                                onChange={() => {
+                                  setAttendanceData((prev) => ({
+                                    ...prev,
+                                    [student.email]: {
+                                      ...prev[student.email],
+                                      present: false,
+                                    },
+                                  }));
+                                }}
                               />
                               Absent
                             </CheckboxLabel>
@@ -367,16 +340,16 @@ const CheckAttendanceSection = () => {
                           <RemarksInput
                             type="text"
                             placeholder="Remarks"
-                            value={
-                              state.attendanceData[student.univId]?.remarks ||
-                              ""
-                            }
-                            onChange={(e) =>
-                              handleRemarksChange(
-                                student.univId,
-                                e.target.value
-                              )
-                            }
+                            value={attendanceData[student.email]?.remarks || ""}
+                            onChange={(e) => {
+                              setAttendanceData((prev) => ({
+                                ...prev,
+                                [student.email]: {
+                                  ...prev[student.email],
+                                  remarks: e.target.value,
+                                },
+                              }));
+                            }}
                           />
                         </AttendanceItem>
                         <Divider />
@@ -386,7 +359,7 @@ const CheckAttendanceSection = () => {
 
                   <SubmitButton
                     onClick={handleSubmit}
-                    disabled={loading.submission || state.students.length === 0}
+                    disabled={loading.submission || students.length === 0}
                   >
                     {loading.submission ? "Submitting..." : "Submit Attendance"}
                   </SubmitButton>

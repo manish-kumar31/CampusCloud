@@ -2,64 +2,93 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.*;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AttendanceService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@CrossOrigin
 @RestController
 @RequestMapping("/api/attendance")
-@RequiredArgsConstructor
+@CrossOrigin
 public class AttendanceController {
 
-    private final AttendanceService attendanceService;
+    @Autowired
+    private  AttendanceService attendanceService;
 
     @PostMapping("/mark")
-    public ResponseEntity<Attendance> markAttendance(@RequestBody AttendanceRequest request) {
-        return ResponseEntity.ok(attendanceService.markAttendance(request));
+    public ResponseEntity<?> markAttendance(@RequestBody AttendanceRequest request) {
+        try {
+            Attendance result = attendanceService.markAttendance(request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<List<Attendance>> markBulkAttendance(@RequestBody BulkAttendanceRequest request) {
-        return ResponseEntity.ok(attendanceService.markBulkAttendance(request));
+    public ResponseEntity<?> markBulkAttendance(@RequestBody BulkAttendanceRequest request) {
+        try {
+            List<Attendance> result = attendanceService.markBulkAttendance(request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    @GetMapping("/student/{univId}")
-    public ResponseEntity<List<Attendance>> getAttendanceByStudent(@PathVariable String univId) {
-        return ResponseEntity.ok(attendanceService.getAttendanceByStudent(univId));
+    @GetMapping("/student/{emailId}")
+    public ResponseEntity<?> getAttendanceByStudent(@PathVariable String emailId) {
+        try {
+            List<Attendance> result = attendanceService.getAttendanceByStudent(emailId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    @GetMapping("/faculty/{univId}")
-    public ResponseEntity<List<Attendance>> getAttendanceByFaculty(@PathVariable String univId) {
-        return ResponseEntity.ok(attendanceService.getAttendanceByFaculty(univId));
+    @GetMapping("/faculty/{emailId}")
+    public ResponseEntity<?> getAttendanceByFaculty(@PathVariable String emailId) {
+        try {
+            List<Attendance> result = attendanceService.getAttendanceByFaculty(emailId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/subject/{subjectId}/date/{date}")
-    public ResponseEntity<List<Attendance>> getAttendanceBySubjectAndDate(
+    public ResponseEntity<?> getAttendanceBySubjectAndDate(
             @PathVariable Long subjectId,
             @PathVariable String date) {
-        return ResponseEntity.ok(attendanceService.getAttendanceBySubjectAndDate(
-                subjectId,
-                LocalDate.parse(date)
-        ));
+        try {
+            List<Attendance> result = attendanceService.getAttendanceBySubjectAndDate(
+                    subjectId, LocalDate.parse(date));
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/stats/subject/{subjectId}")
-    public ResponseEntity<AttendanceStats> getSubjectAttendanceStats(
-            @PathVariable Long subjectId) {
-        return ResponseEntity.ok(attendanceService.getSubjectAttendanceStats(subjectId));
+    public ResponseEntity<?> getSubjectAttendanceStats(@PathVariable Long subjectId) {
+        try {
+            AttendanceStats result = attendanceService.getSubjectAttendanceStats(subjectId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    @GetMapping("/stats/student/{studentUnivId}/subject/{subjectId}")
-    public ResponseEntity<AttendanceStats> getStudentAttendanceStats(
-            @PathVariable String studentUnivId,
+    @GetMapping("/stats/student/{emailId}/subject/{subjectId}")
+    public ResponseEntity<?> getStudentAttendanceStats(
+            @PathVariable String emailId,
             @PathVariable Long subjectId) {
-        return ResponseEntity.ok(attendanceService.getStudentAttendanceStats(
-                studentUnivId,
-                subjectId
-        ));
+        try {
+            AttendanceStats result = attendanceService.getStudentAttendanceStats(emailId, subjectId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

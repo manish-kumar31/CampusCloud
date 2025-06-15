@@ -1,5 +1,9 @@
     package com.mayank.CampusCloudUniversityCampusSystem.model;
 
+    import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+    import com.fasterxml.jackson.annotation.JsonIgnore;
+    import com.fasterxml.jackson.annotation.JsonManagedReference;
+    import com.fasterxml.jackson.annotation.ObjectIdGenerators;
     import jakarta.persistence.*;
     import jakarta.validation.constraints.Email;
     import lombok.*;
@@ -11,7 +15,7 @@
     @Entity
     @NoArgsConstructor
     @AllArgsConstructor
-
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     public class Faculty {
 
         @Id
@@ -22,13 +26,15 @@
         @Column(nullable = true,unique = true,name="univ_id")
         private String univId;
 
-
-        @Column(unique = true)
+        @Column(nullable = true, unique = true)
         private String firebaseUid;
 
         private String department;
+
         @Email
-        private String emailId;
+        @Column(unique = true,name = "email")
+        private String email;
+
         private LocalDate dob;
         private long contactNo;
         private String address;
@@ -47,6 +53,7 @@
 
         // One-to-Many with Attendance (attendance records marked by this faculty)
         @OneToMany(mappedBy = "faculty")
+        @JsonIgnore
         public List<Attendance> markedAttendances;
 
         @Column(nullable = true)

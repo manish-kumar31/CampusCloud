@@ -8,5 +8,5 @@ public class EnrollmentRequest {
     private String subjectName;
     private String subjectCode;
     private int credits;
-    private String univId;
+    private String emailId;
 }

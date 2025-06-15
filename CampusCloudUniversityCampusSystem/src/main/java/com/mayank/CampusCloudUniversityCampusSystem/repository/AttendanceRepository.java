@@ -1,24 +1,41 @@
 package com.mayank.CampusCloudUniversityCampusSystem.repository;
+
+import com.mayank.CampusCloudUniversityCampusSystem.model.Attendance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import  com.mayank.CampusCloudUniversityCampusSystem.model.Attendance;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
-    List<Attendance> findByStudentUnivId(String studentUnivId);
-    List<Attendance> findBySubjectId(Long subjectId);
-    List<Attendance> findByFacultyUnivId(String facultyUnivId);
-    List<Attendance> findByStudentUnivIdAndSubjectId(String studentUnivId, Long subjectId);
 
-    Optional<Attendance> findByStudentUnivIdAndSubjectIdAndDate(String studentUnivId, Long subjectId, LocalDate date);
+    // Changed from findByStudentUnivId to findByStudentEmail
+    List<Attendance> findByStudentEmail(String studentEmail);
+
+    List<Attendance> findBySubjectId(Long subjectId);
+
+    // Changed from findByFacultyUnivId to findByFacultyEmail
+    List<Attendance> findByFacultyEmail(String facultyEmail);
+
+    // Changed from findByStudentUnivIdAndSubjectId to findByStudentEmailAndSubjectId
+    List<Attendance> findByStudentEmailAndSubjectId(String studentEmail, Long subjectId);
+
+    // Changed from findByStudentUnivIdAndSubjectIdAndDate to findByStudentEmailAndSubjectIdAndDate
+    Optional<Attendance> findByStudentEmailAndSubjectIdAndDate(String studentEmail, Long subjectId, LocalDate date);
 
     @Query("SELECT COUNT(DISTINCT a.date) FROM Attendance a WHERE a.subject.id = ?1")
     long countDistinctDatesBySubjectId(Long subjectId);
 
-    @Query("SELECT COUNT(DISTINCT a.student.univId) FROM Attendance a WHERE a.subject.id = ?1")
+    // Changed to use email instead of univId
+    @Query("SELECT COUNT(DISTINCT a.student.email) FROM Attendance a WHERE a.subject.id = ?1")
     long countDistinctStudentsBySubjectId(Long subjectId);
 
     List<Attendance> findBySubjectIdAndDate(Long subjectId, LocalDate date);
+
+    List<Attendance> findByStudentEmailAndSubjectIdAndDateBetween(
+            String studentEmail,
+            Long subjectId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }

@@ -21,14 +21,13 @@ const SubjectEnrollment = () => {
     subjectName: "",
     subjectCode: "",
     credits: 0,
-    univId: "",
+    emailId: "",
   });
   const [enrollments, setEnrollments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Fetch existing enrollments on component mount
   useEffect(() => {
     const fetchEnrollments = async () => {
       setIsLoading(true);
@@ -60,7 +59,7 @@ const SubjectEnrollment = () => {
     if (
       !enrollmentData.subjectName.trim() ||
       !enrollmentData.subjectCode.trim() ||
-      !enrollmentData.univId.trim()
+      !enrollmentData.emailId.trim()
     ) {
       setError("All fields are required");
       return;
@@ -77,7 +76,7 @@ const SubjectEnrollment = () => {
         subjectName: "",
         subjectCode: "",
         credits: 0,
-        univId: "",
+        emailId: "",
       });
       setError(null);
       setSuccess("Enrollment created successfully!");
@@ -139,12 +138,12 @@ const SubjectEnrollment = () => {
             </FormRow>
 
             <FormRow>
-              <FormLabel>University ID:</FormLabel>
+              <FormLabel>Email ID:</FormLabel>
               <AddClassInput
                 type="text"
-                name="univId"
-                placeholder="Faculty University ID"
-                value={enrollmentData.univId}
+                name="emailId"
+                placeholder="Faculty Email ID"
+                value={enrollmentData.emailId}
                 onChange={handleInputChange}
                 disabled={isLoading}
                 required
@@ -167,7 +166,7 @@ const SubjectEnrollment = () => {
                       {enrollment.subjectName} ({enrollment.subjectCode})
                     </strong>
                     <div>Credits: {enrollment.credits}</div>
-                    <div>Faculty ID: {enrollment.univId}</div>
+                    <div>Faculty ID: {enrollment.emailId}</div>
                     <div>
                       Students Enrolled: {enrollment.students?.length || 0}
                     </div>

@@ -56,7 +56,7 @@ public class AdminService {
             stu.setRollNo(rollNo);
             stu.setUnivId(generateUnivId(stu.getName(),stu.getContactNo()));
 
-            User user = service.createUser(stu.getEmailId(),stu.getPassword(),stu.getName(),"student",stu.getUnivId());
+            User user = service.createUser(stu.getEmail(),stu.getPassword(),stu.getName(),"student",stu.getUnivId());
             stu.setFirebaseUid(user.getFirebaseUid());
         }
 
@@ -109,7 +109,7 @@ public class AdminService {
                             .parentContactNo(csv.getParentContactNo())
                             .parentName(csv.getParentName())
                             .parentOccupation(csv.getParentOccupation())
-                            .emailId(csv.getEmailId())
+                            .email(csv.getEmailId())
                             .stuImage(csv.getStuImage())
                             .univId(generateUnivId(csv.getName(), csv.getContactNo()))
                             .build()
@@ -157,17 +157,55 @@ public class AdminService {
     }
 
     public Student uploadStudentDetail(Student student) throws Exception {
+        // Check if email already exists
+        if (studentRepo.findByEmail(student.getEmail()).isPresent()) {
+            throw new Exception("Email already exists");
+        }
 
-        Student savedStudent =  studentRepo.save(student); // So that uniqueId is generated first before generating RollNo
-        String rollNo = generateRollNo(savedStudent.getYear(), savedStudent.getBranch(), savedStudent.getId());
-        savedStudent.setRollNo(rollNo);
-        savedStudent.setPassword(generatePassword(savedStudent.getDob()));
-        savedStudent.setUnivId(generateUnivId(savedStudent.getName(),savedStudent.getContactNo()));
+        // Set default values for required fields if not provided
+        if (student.getPassword() == null) {
+            student.setPassword(student.getDob() != null ?
+                    student.getDob().toString() : "password123");
+        }
 
-        User user = service.createUser(savedStudent.getEmailId(),savedStudent.getPassword(),savedStudent.getName(),"student",savedStudent.getUnivId());
-        savedStudent.setFirebaseUid(user.getFirebaseUid());
+        // Save student first to generate ID
+        Student savedStudent = studentRepo.save(student);
+
+        // Generate roll number if not provided
+        if (savedStudent.getRollNo() == null) {
+            String rollNo = generateRollNo(
+                    savedStudent.getYear() != 0 ? savedStudent.getYear() : 1,
+                    savedStudent.getBranch() != null ? savedStudent.getBranch() : "GEN",
+                    savedStudent.getId()
+            );
+            savedStudent.setRollNo(rollNo);
+        }
+
+        // Generate university ID if not provided
+        if (savedStudent.getUnivId() == null) {
+            savedStudent.setUnivId(generateUnivId(
+                    savedStudent.getName(),
+                    savedStudent.getContactNo() != null ? savedStudent.getContactNo() : 1234567890L
+            ));
+        }
+
+        // Create Firebase user
+        try {
+            User user = service.createUser(
+                    savedStudent.getEmail(),
+                    savedStudent.getPassword(),
+                    savedStudent.getName(),
+                    "student",
+                    savedStudent.getUnivId()
+            );
+            savedStudent.setFirebaseUid(user.getFirebaseUid());
+        } catch (Exception e) {
+            // If Firebase fails, delete the student record
+            studentRepo.delete(savedStudent);
+            throw new Exception("Failed to create Firebase user: " + e.getMessage());
+        }
+
         return studentRepo.save(savedStudent);
-
     }
 
 
@@ -177,7 +215,7 @@ public class AdminService {
         Faculty savedFaculty =  facultyRepo.save(faculty);
         savedFaculty.setPassword(generatePassword(savedFaculty.getDob()));
         savedFaculty.setUnivId(generateUnivIdFaculty(savedFaculty.getName(),savedFaculty.getContactNo()));
-        User user = service.createUser(savedFaculty.getEmailId(),savedFaculty.getPassword(),savedFaculty.getName(),"faculty",savedFaculty.getUnivId());
+        User user = service.createUser(savedFaculty.getEmail(),savedFaculty.getPassword(),savedFaculty.getName(),"faculty",savedFaculty.getUnivId());
         savedFaculty.setFirebaseUid(user.getFirebaseUid());
         return facultyRepo.save(savedFaculty);
 
@@ -213,7 +251,7 @@ public class AdminService {
             existingStudent.setParentContactNo(updatedStudent.getParentContactNo());
             existingStudent.setParentName(updatedStudent.getParentName());
             existingStudent.setParentOccupation(updatedStudent.getParentOccupation());
-            existingStudent.setEmailId(updatedStudent.getEmailId());
+            existingStudent.setEmail(updatedStudent.getEmail());
             existingStudent.setUnivId(updatedStudent.getUnivId());
 
             return studentRepo.save(existingStudent);
@@ -239,15 +277,15 @@ public class AdminService {
     }
 
 
-    public Optional<Faculty> getFacultyByUnivId(String univId){
+    public Optional<Faculty> getFacultyByUnivId(String emailId){
 
-        return facultyRepo.findFacultyByUnivId(univId);
+        return facultyRepo.findByEmail(emailId);
 
     }
 
-    public Faculty updateFaculty(String univId, Faculty updatedFaculty) {
+    public Faculty updateFaculty(String emailId, Faculty updatedFaculty) {
 
-        Optional<Faculty> optionalFaculty = facultyRepo.findFacultyByUnivId(univId);
+        Optional<Faculty> optionalFaculty = facultyRepo.findByEmail(emailId);
 
         if (optionalFaculty.isPresent()) {
             Faculty existingFaculty = optionalFaculty.get();
@@ -259,8 +297,8 @@ public class AdminService {
             existingFaculty.setGender(updatedFaculty.getGender());
             existingFaculty.setNationality(updatedFaculty.getNationality());
             existingFaculty.setBloodGroup(updatedFaculty.getBloodGroup());
-            existingFaculty.setEmailId(updatedFaculty.getEmailId());
-            existingFaculty.setUnivId(updatedFaculty.getUnivId());
+            existingFaculty.setEmail(updatedFaculty.getEmail());
+
 
             return facultyRepo.save(existingFaculty);
         }
@@ -269,19 +307,17 @@ public class AdminService {
         }
     }
 
-    public boolean deleteFaculty(String rollNo) {
+    public boolean deleteFaculty(String emailId) {
 
-        Optional<Faculty> optionalFaculty = getFacultyByUnivId(rollNo);
+        Faculty faculty = facultyRepo.findByEmail((emailId)).orElseThrow(() -> new RuntimeException("Faculty not found"));
 
-        if (optionalFaculty.isPresent()){
-            Faculty existingFaculty = optionalFaculty.get();
-            facultyRepo.delete(existingFaculty);
+        if (faculty != null){
+            facultyRepo.delete(faculty);
             return true;
         }
-        else{
+        else {
             return false;
         }
-
     }
 
 

@@ -16,20 +16,40 @@ import {
   ActionButton,
   ButtonGroup,
   FormSelect,
+  FeedbackMessage,
 } from "../../styles/StudentsStyles";
 
 const Students = () => {
-  // State for form inputs - only required fields initialized
+  // State for form inputs
   const [studentData, setStudentData] = useState({
     name: "",
     emailId: "",
     univId: "",
-    // Other fields will be added as needed
+    subject: "",
+    branch: "",
+    semester: "",
+    year: "",
+    rollNo: "",
+    dob: "",
+    contactNo: "",
+    address: "",
+    gender: "",
+    nationality: "",
+    bloodGroup: "",
+    parentContactNo: "",
+    parentName: "",
+    parentOccupation: "",
   });
 
   const [students, setStudents] = useState([]);
   const [file, setFile] = useState(null);
   const [activeTab, setActiveTab] = useState("single");
+  const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState({
+    type: "",
+    message: "",
+    visible: false,
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,77 +59,138 @@ const Students = () => {
     }));
   };
 
-  // Add single student - only sending required fields
   const handleAddStudent = async (e) => {
     e.preventDefault();
+    const authToken = localStorage.getItem("authToken");
 
     // Validate required fields
     if (!studentData.name || !studentData.emailId) {
-      alert("Name and Email are required fields");
+      setFeedback({
+        type: "error",
+        message: "Name and Email are required fields",
+        visible: true,
+      });
+      setTimeout(
+        () => setFeedback((prev) => ({ ...prev, visible: false })),
+        5000
+      );
       return;
     }
 
+    setIsLoading(true);
+
     try {
+      // Prepare the student data payload
+      const studentPayload = {
+        name: studentData.name,
+        email: studentData.emailId,
+        univId: studentData.univId || null,
+        course: studentData.subject || null,
+        branch: studentData.branch || null,
+        semester: studentData.semester ? parseInt(studentData.semester) : null,
+        year: studentData.year ? parseInt(studentData.year) : null,
+        rollNo: studentData.rollNo || null,
+        dob: studentData.dob || null,
+        contactNo: studentData.contactNo
+          ? parseInt(studentData.contactNo)
+          : null,
+        address: studentData.address || null,
+        gender: studentData.gender || null,
+        nationality: studentData.nationality || null,
+        bloodGroup: studentData.bloodGroup || null,
+        parentContactNo: studentData.parentContactNo
+          ? parseInt(studentData.parentContactNo)
+          : null,
+        parentName: studentData.parentName || null,
+        parentOccupation: studentData.parentOccupation || null,
+      };
+
       const response = await fetch("http://localhost:8080/api/uploadStudent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({
-          name: studentData.name,
-          emailId: studentData.emailId,
-          univId: studentData.univId || null,
-          // Only include fields that have values
-          ...(studentData.subject && { subject: studentData.subject }),
-          ...(studentData.branch && { branch: studentData.branch }),
-          ...(studentData.semester && { semester: studentData.semester }),
-          ...(studentData.year && { year: studentData.year }),
-          ...(studentData.rollNo && { rollNo: studentData.rollNo }),
-          ...(studentData.dob && { dob: studentData.dob }),
-          ...(studentData.contactNo && { contactNo: studentData.contactNo }),
-          ...(studentData.address && { address: studentData.address }),
-          ...(studentData.gender && { gender: studentData.gender }),
-          ...(studentData.nationality && {
-            nationality: studentData.nationality,
-          }),
-          ...(studentData.bloodGroup && { bloodGroup: studentData.bloodGroup }),
-          ...(studentData.parentContactNo && {
-            parentContactNo: studentData.parentContactNo,
-          }),
-          ...(studentData.parentName && { parentName: studentData.parentName }),
-          ...(studentData.parentOccupation && {
-            parentOccupation: studentData.parentOccupation,
-          }),
-        }),
+        body: JSON.stringify(studentPayload),
       });
 
-      if (!response.ok) throw new Error("Failed to add student");
+      if (!response.ok) {
+        let errorMessage = "Failed to add student";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
 
       const newStudent = await response.json();
-      setStudents([...students, newStudent]);
+      setStudents((prev) => [...prev, newStudent]);
 
-      // Reset form but keep optional fields blank
+      // Reset form
       setStudentData({
         name: "",
         emailId: "",
         univId: "",
-        // Clear other fields if needed
+        subject: "",
+        branch: "",
+        semester: "",
+        year: "",
+        rollNo: "",
+        dob: "",
+        contactNo: "",
+        address: "",
+        gender: "",
+        nationality: "",
+        bloodGroup: "",
+        parentContactNo: "",
+        parentName: "",
+        parentOccupation: "",
+      });
+
+      setFeedback({
+        type: "success",
+        message: "Student added successfully!",
+        visible: true,
       });
     } catch (error) {
       console.error("Error adding student:", error);
-      alert(error.message);
+      setFeedback({
+        type: "error",
+        message: error.message || "Failed to add student",
+        visible: true,
+      });
+    } finally {
+      setIsLoading(false);
+      setTimeout(
+        () => setFeedback((prev) => ({ ...prev, visible: false })),
+        5000
+      );
     }
   };
 
-  // Handle bulk upload - remains the same
   const handleBulkUpload = async (e) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+      setFeedback({
+        type: "error",
+        message: "Please select a file to upload",
+        visible: true,
+      });
+      setTimeout(
+        () => setFeedback((prev) => ({ ...prev, visible: false })),
+        5000
+      );
+      return;
+    }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    setIsLoading(true);
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+
       const response = await fetch(
         "http://localhost:8080/api/uploadStudentDetails",
         {
@@ -118,14 +199,36 @@ const Students = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Bulk upload failed");
+      if (!response.ok) {
+        let errorMessage = "Bulk upload failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
 
       const count = await response.json();
-      alert(`Successfully uploaded ${count} students`);
-      // You might want to refresh the student list here
+      setFeedback({
+        type: "success",
+        message: `Successfully uploaded ${count} students`,
+        visible: true,
+      });
     } catch (error) {
       console.error("Error in bulk upload:", error);
-      alert(error.message);
+      setFeedback({
+        type: "error",
+        message: error.message || "Bulk upload failed",
+        visible: true,
+      });
+    } finally {
+      setIsLoading(false);
+      setTimeout(
+        () => setFeedback((prev) => ({ ...prev, visible: false })),
+        5000
+      );
     }
   };
 
@@ -136,16 +239,31 @@ const Students = () => {
         <StudentsContent>
           <StudentsHeader>Student Management</StudentsHeader>
 
+          {feedback.visible && (
+            <FeedbackMessage type={feedback.type}>
+              {feedback.message}
+              <button
+                onClick={() =>
+                  setFeedback((prev) => ({ ...prev, visible: false }))
+                }
+              >
+                ×
+              </button>
+            </FeedbackMessage>
+          )}
+
           <ButtonGroup>
             <ActionButton
               active={activeTab === "single"}
               onClick={() => setActiveTab("single")}
+              disabled={isLoading}
             >
               Add Single Student
             </ActionButton>
             <ActionButton
               active={activeTab === "bulk"}
               onClick={() => setActiveTab("bulk")}
+              disabled={isLoading}
             >
               Bulk Upload
             </ActionButton>
@@ -164,6 +282,7 @@ const Students = () => {
                       value={studentData.name}
                       onChange={handleInputChange}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -174,20 +293,12 @@ const Students = () => {
                       value={studentData.emailId}
                       onChange={handleInputChange}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </FormRow>
 
                 <FormRow>
-                  {/* <div>
-                    <label>University ID</label>
-                    <AddStudentInput
-                      type="text"
-                      name="univId"
-                      value={studentData.univId}
-                      onChange={handleInputChange}
-                    />
-                  </div> */}
                   <div>
                     <label>Roll Number</label>
                     <AddStudentInput
@@ -195,6 +306,7 @@ const Students = () => {
                       name="rollNo"
                       value={studentData.rollNo}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     />
                   </div>
                 </FormRow>
@@ -210,6 +322,7 @@ const Students = () => {
                       name="subject"
                       value={studentData.subject}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -219,6 +332,7 @@ const Students = () => {
                       name="branch"
                       value={studentData.branch}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     />
                   </div>
                 </FormRow>
@@ -232,6 +346,7 @@ const Students = () => {
                       value={studentData.semester}
                       onChange={handleInputChange}
                       min="1"
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -242,6 +357,7 @@ const Students = () => {
                       value={studentData.year}
                       onChange={handleInputChange}
                       min="1"
+                      disabled={isLoading}
                     />
                   </div>
                 </FormRow>
@@ -257,6 +373,7 @@ const Students = () => {
                       name="dob"
                       value={studentData.dob}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -265,6 +382,7 @@ const Students = () => {
                       name="gender"
                       value={studentData.gender}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     >
                       <option value="">Select</option>
                       <option value="Male">Male</option>
@@ -282,6 +400,7 @@ const Students = () => {
                       name="contactNo"
                       value={studentData.contactNo}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -291,12 +410,15 @@ const Students = () => {
                       name="address"
                       value={studentData.address}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                     />
                   </div>
                 </FormRow>
               </FormSection>
 
-              <AddStudentButton type="submit">Add Student</AddStudentButton>
+              <AddStudentButton type="submit" disabled={isLoading}>
+                {isLoading ? "Adding..." : "Add Student"}
+              </AddStudentButton>
             </AddStudentForm>
           ) : (
             <FileUploadContainer>
@@ -307,9 +429,12 @@ const Students = () => {
                   onChange={(e) => setFile(e.target.files[0])}
                   accept=".csv"
                   required
+                  disabled={isLoading}
                 />
                 <p>Upload CSV file with student details</p>
-                <AddStudentButton type="submit">Upload File</AddStudentButton>
+                <AddStudentButton type="submit" disabled={isLoading}>
+                  {isLoading ? "Uploading..." : "Upload File"}
+                </AddStudentButton>
               </form>
             </FileUploadContainer>
           )}
@@ -320,10 +445,10 @@ const Students = () => {
               students.map((student, index) => (
                 <StudentItem key={index}>
                   <strong>Name:</strong> {student.name} <br />
-                  <strong>Email:</strong> {student.emailId} <br />
+                  <strong>Email:</strong> {student.email} <br />
                   <strong>University ID:</strong> {student.univId || "N/A"}{" "}
                   <br />
-                  <strong>Course:</strong> {student.subject || "N/A"} <br />
+                  <strong>Course:</strong> {student.course || "N/A"} <br />
                   <strong>Roll no:</strong> {student.rollNo || "N/A"}
                 </StudentItem>
               ))

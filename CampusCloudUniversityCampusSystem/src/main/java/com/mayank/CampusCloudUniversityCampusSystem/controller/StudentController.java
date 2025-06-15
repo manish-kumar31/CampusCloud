@@ -1,12 +1,16 @@
 package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
-import com.mayank.CampusCloudUniversityCampusSystem.model.Student;
-import com.mayank.CampusCloudUniversityCampusSystem.repository.StudentRepo;
+import com.mayank.CampusCloudUniversityCampusSystem.model.*;
+import com.mayank.CampusCloudUniversityCampusSystem.repository.*;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -17,26 +21,163 @@ public class StudentController {
     private StudentRepo studentRepository;
 
     @Autowired
+    private AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private SubjectEnrollmentRepo subjectEnrollmentRepo;
+
+    @Autowired
     private AuthService authService;
 
-    // ✅ Fetch student by Firebase UID, secured by verifying token
-    @GetMapping("/{firebaseUid}")
+    // Get student profile by email
+    @GetMapping("/by-email/{email}")
     public ResponseEntity<?> getStudentProfile(
-            @PathVariable String firebaseUid,
+            @PathVariable String email,
             @RequestHeader("Authorization") String authHeader) {
-
         try {
             String token = authHeader.replace("Bearer ", "");
 
-            // ✅ Verify token, get user, and check access to this Firebase UID
-            authService.verifyTokenAndCheckAccess(token, firebaseUid);
+            // Verify token and get user email to match with requested email
+            User user = authService.verifyTokenAndGetUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // ✅ Fetch student details by Firebase UID
-            Student student = studentRepository.findByFirebaseUid(firebaseUid)
-                    .orElseThrow(() -> new RuntimeException("Student not found with provided Firebase UID"));
+            if (!user.getEmail().equalsIgnoreCase(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
 
+            Student student = studentRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
             return ResponseEntity.ok(student);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
 
+    // Get all subjects for a student by email
+    @GetMapping("/{email}/subjects")
+    public ResponseEntity<?> getStudentSubjects(
+            @PathVariable String email,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            User user = authService.verifyTokenAndGetUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!user.getEmail().equalsIgnoreCase(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByStudent_Email(email);
+            return ResponseEntity.ok(subjects);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    // Get attendance summary for all subjects by email
+    @GetMapping("/{email}/attendance-summary")
+    public ResponseEntity<?> getAttendanceSummary(
+            @PathVariable String email,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            User user = authService.verifyTokenAndGetUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!user.getEmail().equalsIgnoreCase(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            LocalDate start = startDate != null ? LocalDate.parse(startDate) : LocalDate.now().minusMonths(6);
+            LocalDate end = endDate != null ? LocalDate.parse(endDate) : LocalDate.now();
+
+            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByStudent_Email(email);
+
+            List<Map<String, Object>> attendanceSummary = new ArrayList<>();
+
+            for (SubjectEnrollment subject : subjects) {
+                List<Attendance> attendanceRecords = attendanceRepository
+                        .findByStudentEmailAndSubjectIdAndDateBetween(
+                                email,
+                                subject.getId(),
+                                start,
+                                end
+                        );
+
+                long totalClasses = attendanceRecords.stream()
+                        .map(Attendance::getDate)
+                        .distinct()
+                        .count();
+
+                long presentCount = attendanceRecords.stream()
+                        .filter(Attendance::isPresent)
+                        .count();
+
+                double percentage = totalClasses > 0 ?
+                        Math.round((presentCount * 100.0 / totalClasses) * 100) / 100.0 :
+                        0.0;
+
+                Map<String, Object> subjectSummary = new HashMap<>();
+                subjectSummary.put("subjectName", subject.getSubjectName() + "(" + subject.getCredits() + ")");
+                subjectSummary.put("subjectCode", subject.getSubjectCode());
+                subjectSummary.put("faculty", subject.getFaculty().getName());
+                subjectSummary.put("totalLectures", totalClasses);
+                subjectSummary.put("totalPresent", presentCount);
+                subjectSummary.put("percentage", percentage);
+
+                attendanceSummary.add(subjectSummary);
+            }
+
+            double overallPercentage = attendanceSummary.stream()
+                    .mapToDouble(s -> (double)s.get("percentage"))
+                    .average()
+                    .orElse(0.0);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("startDate", start);
+            response.put("endDate", end);
+            response.put("overallPercentage", Math.round(overallPercentage * 100) / 100.0);
+            response.put("subjects", attendanceSummary);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error generating attendance summary: " + e.getMessage());
+        }
+    }
+
+    // Get detailed attendance for a specific subject by email
+    @GetMapping("/{email}/attendance/{subjectId}")
+    public ResponseEntity<?> getSubjectAttendance(
+            @PathVariable String email,
+            @PathVariable Long subjectId,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            User user = authService.verifyTokenAndGetUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!user.getEmail().equalsIgnoreCase(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            SubjectEnrollment subject = subjectEnrollmentRepo.findById(subjectId)
+                    .orElseThrow(() -> new RuntimeException("Subject not found"));
+
+            // Verify student is enrolled
+            boolean isEnrolled = subject.getEnrolledStudents().stream()
+                    .anyMatch(s -> s.getEmail().equalsIgnoreCase(email));
+
+            if (!isEnrolled) {
+                throw new RuntimeException("Student is not enrolled in this subject");
+            }
+
+            List<Attendance> attendanceRecords = attendanceRepository
+                    .findByStudentEmailAndSubjectId(email, subjectId);
+
+            return ResponseEntity.ok(attendanceRecords);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }

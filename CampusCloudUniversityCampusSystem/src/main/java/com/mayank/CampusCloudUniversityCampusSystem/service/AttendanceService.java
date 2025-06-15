@@ -2,193 +2,204 @@ package com.mayank.CampusCloudUniversityCampusSystem.service;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.*;
 import com.mayank.CampusCloudUniversityCampusSystem.repository.*;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AttendanceService {
-    private final AttendanceRepository attendanceRepository;
-    private final StudentRepo studentRepository;
-    private final FacultyRepo facultyRepository;
-    private final SubjectEnrollmentRepo subjectEnrollmentRepository;
+
+    @Autowired
+    private AttendanceRepository attendanceRepo;
+
+    @Autowired
+    private StudentRepo studentRepo;
+
+    @Autowired
+    private FacultyRepo facultyRepo;
+
+    @Autowired
+    private SubjectEnrollmentRepo subjectRepo;
 
     @Transactional
     public Attendance markAttendance(AttendanceRequest request) {
-        // Validate input
-        if (request == null || request.getStudentUnivId() == null || request.getFacultyUnivId() == null) {
-            throw new IllegalArgumentException("Invalid attendance request");
+        // Basic validation
+        if (request == null || request.getStudentEmail() == null || request.getFacultyEmail() == null) {
+            throw new RuntimeException("Invalid request");
         }
 
-        Student student = studentRepository.findByUnivId(request.getStudentUnivId())
-                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + request.getStudentUnivId()));
+        // Find student
+        Student student = studentRepo.findByEmail(request.getStudentEmail())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        Faculty faculty = facultyRepository.findFacultyByUnivId(request.getFacultyUnivId())
-                .orElseThrow(() -> new EntityNotFoundException("Faculty not found with ID: " + request.getFacultyUnivId()));
+        // Find faculty
+        Faculty faculty = facultyRepo.findByEmail(request.getFacultyEmail())
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
 
-        SubjectEnrollment subject = subjectEnrollmentRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new EntityNotFoundException("Subject not found with ID: " + request.getSubjectId()));
+        // Find subject
+        SubjectEnrollment subject = subjectRepo.findById(request.getSubjectId())
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
 
-        validateFacultySubject(faculty, subject);
-        validateStudentEnrollment(student, subject);
+        // Validate relationships
+        if (!subject.getFaculty().getEmail().equals(faculty.getEmail())) {
+            throw new RuntimeException("Faculty doesn't teach this subject");
+        }
 
-        LocalDate attendanceDate = request.getDate() != null ? request.getDate() : LocalDate.now();
+        if (!subject.getEnrolledStudents().contains(student)) {
+            throw new RuntimeException("Student not enrolled in subject");
+        }
 
-        // Check for existing attendance
-        attendanceRepository.findByStudentUnivIdAndSubjectIdAndDate(
-                student.getUnivId(), subject.getId(), attendanceDate
-        ).ifPresent(a -> {
-            throw new IllegalStateException("Attendance already exists for student " +
-                    student.getUnivId() + " in subject " + subject.getId() + " on " + attendanceDate);
-        });
+        // Set date
+        LocalDate date = request.getDate() != null ? request.getDate() : LocalDate.now();
 
-        // Create new attendance record
+        // Check if attendance already exists
+        Optional<Attendance> existing = attendanceRepo.findByStudentEmailAndSubjectIdAndDate(
+                student.getEmail(), subject.getId(), date);
+
+        if (existing.isPresent()) {
+            throw new RuntimeException("Attendance already marked");
+        }
+
+        // Create new attendance
         Attendance attendance = new Attendance();
         attendance.setStudent(student);
         attendance.setFaculty(faculty);
         attendance.setSubject(subject);
-        attendance.setDate(attendanceDate);
+        attendance.setDate(date);
         attendance.setPresent(request.isPresent());
         attendance.setRemarks(request.getRemarks());
 
-        return attendanceRepository.save(attendance);
+        return attendanceRepo.save(attendance);
     }
 
     @Transactional
     public List<Attendance> markBulkAttendance(BulkAttendanceRequest request) {
-        // Validate input
-        if (request == null || request.getFacultyUnivId() == null || request.getStudentAttendances() == null) {
-            throw new IllegalArgumentException("Invalid bulk attendance request");
+        // Basic validation
+        if (request == null || request.getFacultyEmail() == null || request.getStudentAttendances() == null) {
+            throw new RuntimeException("Invalid request");
         }
 
-        Faculty faculty = facultyRepository.findFacultyByUnivId(request.getFacultyUnivId())
-                .orElseThrow(() -> new EntityNotFoundException("Faculty not found with ID: " + request.getFacultyUnivId()));
+        // Find faculty and subject
+        Faculty faculty = facultyRepo.findByEmail(request.getFacultyEmail())
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
 
-        SubjectEnrollment subject = subjectEnrollmentRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new EntityNotFoundException("Subject not found with ID: " + request.getSubjectId()));
+        SubjectEnrollment subject = subjectRepo.findById(request.getSubjectId())
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
 
-        validateFacultySubject(faculty, subject);
+        // Validate faculty teaches subject
+        if (!subject.getFaculty().getEmail().equals(faculty.getEmail())) {
+            throw new RuntimeException("Faculty doesn't teach this subject");
+        }
 
-        LocalDate attendanceDate = request.getDate() != null ? request.getDate() : LocalDate.now();
+        LocalDate date = request.getDate() != null ? request.getDate() : LocalDate.now();
+        List<Attendance> results = new ArrayList<>();
 
-        return request.getStudentAttendances().parallelStream()
-                .map(sa -> {
-                    Student student = studentRepository.findByUnivId(sa.getStudentUnivId())
-                            .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + sa.getStudentUnivId()));
+        for (BulkAttendanceRequest.StudentAttendance sa : request.getStudentAttendances()) {
 
-                    validateStudentEnrollment(student, subject);
+            Student student = studentRepo.findByEmail(sa.getStudentEmail())
+                    .orElseThrow(() -> new RuntimeException("Student not found: " + sa.getStudentEmail()));
 
-                    // Check for existing attendance
-                    Optional<Attendance> existing = attendanceRepository.findByStudentUnivIdAndSubjectIdAndDate(
-                            student.getUnivId(), subject.getId(), attendanceDate
-                    );
+            if (!subject.getEnrolledStudents().contains(student)) {
+                throw new RuntimeException("Student not enrolled: " + student.getEmail());
+            }
 
-                    if (existing.isPresent()) {
-                        Attendance att = existing.get();
-                        att.setPresent(sa.isPresent());
-                        att.setRemarks(sa.getRemarks());
-                        return attendanceRepository.save(att);
-                    } else {
-                        Attendance newAttendance = new Attendance();
-                        newAttendance.setStudent(student);
-                        newAttendance.setFaculty(faculty);
-                        newAttendance.setSubject(subject);
-                        newAttendance.setDate(attendanceDate);
-                        newAttendance.setPresent(sa.isPresent());
-                        newAttendance.setRemarks(sa.getRemarks());
-                        return attendanceRepository.save(newAttendance);
-                    }
-                })
-                .collect(Collectors.toList());
+            // Check existing attendance
+            Optional<Attendance> existing = attendanceRepo.findByStudentEmailAndSubjectIdAndDate(
+                    student.getEmail(), subject.getId(), date);
+
+            Attendance attendance;
+            if (existing.isPresent()) {
+                attendance = existing.get();
+                attendance.setPresent(sa.isPresent());
+                attendance.setRemarks(sa.getRemarks());
+            } else {
+                attendance = new Attendance();
+                attendance.setStudent(student);
+                attendance.setFaculty(faculty);
+                attendance.setSubject(subject);
+                attendance.setDate(date);
+                attendance.setPresent(sa.isPresent());
+                attendance.setRemarks(sa.getRemarks());
+            }
+
+            results.add(attendanceRepo.save(attendance));
+        }
+
+        return results;
     }
 
     public List<Attendance> getAttendanceBySubjectAndDate(Long subjectId, LocalDate date) {
         if (subjectId == null || date == null) {
-            throw new IllegalArgumentException("Subject ID and date must not be null");
+            throw new RuntimeException("Subject ID and date required");
         }
-        return attendanceRepository.findBySubjectIdAndDate(subjectId, date);
+        return attendanceRepo.findBySubjectIdAndDate(subjectId, date);
     }
 
     public AttendanceStats getSubjectAttendanceStats(Long subjectId) {
         if (subjectId == null) {
-            throw new IllegalArgumentException("Subject ID must not be null");
+            throw new RuntimeException("Subject ID required");
         }
 
-        List<Attendance> attendances = attendanceRepository.findBySubjectId(subjectId);
+        List<Attendance> attendances = attendanceRepo.findBySubjectId(subjectId);
         if (attendances.isEmpty()) {
-            return new AttendanceStats(); // Return empty stats instead of throwing exception
+            return new AttendanceStats();
         }
 
-        long totalClasses = attendanceRepository.countDistinctDatesBySubjectId(subjectId);
-        long presentCount = attendances.stream().filter(Attendance::isPresent).count();
-        double attendancePercentage = totalClasses > 0 ?
-                ((double) presentCount / totalClasses * 100) : 0;
+        long totalClasses = attendanceRepo.countDistinctDatesBySubjectId(subjectId);
+        long presentCount = 0;
 
-        Map<LocalDate, Integer> dailyAttendance = attendances.stream()
-                .collect(Collectors.groupingBy(
-                        Attendance::getDate,
-                        Collectors.summingInt(a -> a.isPresent() ? 1 : 0)
-                ));
+        for (Attendance a : attendances) {
+            if (a.isPresent()) presentCount++;
+        }
+
+        double percentage = totalClasses > 0 ? (presentCount * 100.0 / totalClasses) : 0;
+        percentage = Math.round(percentage * 100) / 100.0;
 
         AttendanceStats stats = new AttendanceStats();
-        stats.setTotalClasses((int) totalClasses);
-        stats.setTotalPresent((int) presentCount);
-        stats.setAttendancePercentage(Math.round(attendancePercentage * 100.0) / 100.0);
-        stats.setDailyAttendance(dailyAttendance);
+        stats.setTotalClasses((int)totalClasses);
+        stats.setTotalPresent((int)presentCount);
+        stats.setAttendancePercentage(percentage);
 
         return stats;
     }
 
-    public AttendanceStats getStudentAttendanceStats(String studentUnivId, Long subjectId) {
-        if (studentUnivId == null || subjectId == null) {
-            throw new IllegalArgumentException("Student ID and Subject ID must not be null");
+    public List<Attendance> getAttendanceByStudent(String studentEmail) {
+        if (studentEmail == null) {
+            throw new RuntimeException("Student email required");
+        }
+        return attendanceRepo.findByStudentEmail(studentEmail);
+    }
+
+    public List<Attendance> getAttendanceByFaculty(String emailId) {
+        if (emailId == null) {
+            throw new RuntimeException("Faculty email required");
+        }
+        return attendanceRepo.findByFacultyEmail(emailId);
+    }
+
+    public AttendanceStats getStudentAttendanceStats(String emailId, Long subjectId) {
+        if (emailId == null || subjectId == null) {
+            throw new RuntimeException("Student email and Subject ID required");
         }
 
-        List<Attendance> attendances = attendanceRepository.findByStudentUnivIdAndSubjectId(studentUnivId, subjectId);
-        long totalClasses = attendanceRepository.countDistinctDatesBySubjectId(subjectId);
-        long presentCount = attendances.stream().filter(Attendance::isPresent).count();
-        double attendancePercentage = totalClasses > 0 ?
-                ((double) presentCount / totalClasses * 100) : 0;
+        List<Attendance> attendances = attendanceRepo.findByStudentEmailAndSubjectId(emailId, subjectId);
+        long totalClasses = attendanceRepo.countDistinctDatesBySubjectId(subjectId);
+        long presentCount = 0;
+
+        for (Attendance a : attendances) {
+            if (a.isPresent()) presentCount++;
+        }
+
+        double percentage = totalClasses > 0 ? (presentCount * 100.0 / totalClasses) : 0;
+        percentage = Math.round(percentage * 100) / 100.0;
 
         AttendanceStats stats = new AttendanceStats();
-        stats.setTotalClasses((int) totalClasses);
-        stats.setTotalPresent((int) presentCount);
-        stats.setAttendancePercentage(Math.round(attendancePercentage * 100.0) / 100.0);
+        stats.setTotalClasses((int)totalClasses);
+        stats.setTotalPresent((int)presentCount);
+        stats.setAttendancePercentage(percentage);
 
         return stats;
-    }
-
-    public List<Attendance> getAttendanceByStudent(String studentUnivId) {
-        if (studentUnivId == null) {
-            throw new IllegalArgumentException("Student ID must not be null");
-        }
-        return attendanceRepository.findByStudentUnivId(studentUnivId);
-    }
-
-    public List<Attendance> getAttendanceByFaculty(String facultyUnivId) {
-        if (facultyUnivId == null) {
-            throw new IllegalArgumentException("Faculty ID must not be null");
-        }
-        return attendanceRepository.findByFacultyUnivId(facultyUnivId);
-    }
-
-    private void validateFacultySubject(Faculty faculty, SubjectEnrollment subject) {
-        if (!subject.getFaculty().getUnivId().equals(faculty.getUnivId())) {
-            throw new IllegalStateException("Faculty " + faculty.getUnivId() +
-                    " is not assigned to subject " + subject.getId());
-        }
-    }
-
-    private void validateStudentEnrollment(Student student, SubjectEnrollment subject) {
-        if (!subject.getEnrolledStudents().contains(student)) {
-            throw new IllegalStateException("Student " + student.getUnivId() +
-                    " is not enrolled in subject " + subject.getId());
-        }
     }
 }
