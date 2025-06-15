@@ -200,10 +200,36 @@ export const StatsValue = styled.div`
   color: #2c3e50;
 `;
 // In your AttendanceStyles.js file, add this component:
+
+export const StudentInfo = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const AttendanceControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+export const RadioGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
 export const RemarksInput = styled.input`
-  margin-left: 10px;
-  padding: 5px;
+  padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  width: 150px;
+  flex: 1;
+`;
+
+export const RemarksText = styled.div`
+  font-style: italic;
+  color: #666;
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #eee;
 `;

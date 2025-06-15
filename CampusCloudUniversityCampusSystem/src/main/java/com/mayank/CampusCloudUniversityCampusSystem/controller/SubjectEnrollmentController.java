@@ -63,12 +63,17 @@ public class SubjectEnrollmentController {
         }
     }
 
-    // Get subjects by faculty (existing)
     @GetMapping("/faculty")
     public ResponseEntity<?> getSubjectsByFaculty(@RequestHeader("Authorization") String authHeader) {
         try {
             String facultyEmail = extractEmailFromToken(authHeader);
-            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByFaculty_Email(facultyEmail);
+
+            // Option 1: Return entities (simpler but may expose more data than needed)
+            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByFacultyEmail(facultyEmail);
+
+            // Option 2: Return DTOs (recommended for better control)
+            // List<SubjectEnrollmentDTO> subjects = subjectEnrollmentRepo.findDTOByFacultyEmail(facultyEmail);
+
             return ResponseEntity.ok(subjects);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

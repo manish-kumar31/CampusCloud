@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -37,19 +36,22 @@ public class StudentController {
         try {
             String token = authHeader.replace("Bearer ", "");
 
-            // Verify token and get user email to match with requested email
+            // Verify token and get user email
             User user = authService.verifyTokenAndGetUser(token)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!user.getEmail().equalsIgnoreCase(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Access denied");
             }
 
             Student student = studentRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
             return ResponseEntity.ok(student);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage());
         }
     }
 
@@ -64,13 +66,19 @@ public class StudentController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!user.getEmail().equalsIgnoreCase(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Access denied");
             }
 
-            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByStudent_Email(email);
+            // <-- Use the nested-property query here
+            List<SubjectEnrollment> subjects =
+                    subjectEnrollmentRepo.findByEnrolledStudentsEmail(email);
+
             return ResponseEntity.ok(subjects);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage());
         }
     }
 
@@ -87,64 +95,67 @@ public class StudentController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!user.getEmail().equalsIgnoreCase(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Access denied");
             }
 
-            LocalDate start = startDate != null ? LocalDate.parse(startDate) : LocalDate.now().minusMonths(6);
-            LocalDate end = endDate != null ? LocalDate.parse(endDate) : LocalDate.now();
+            LocalDate start = startDate != null
+                    ? LocalDate.parse(startDate)
+                    : LocalDate.now().minusMonths(6);
+            LocalDate end = endDate != null
+                    ? LocalDate.parse(endDate)
+                    : LocalDate.now();
 
-            List<SubjectEnrollment> subjects = subjectEnrollmentRepo.findByStudent_Email(email);
+            List<SubjectEnrollment> subjects =
+                    subjectEnrollmentRepo.findByEnrolledStudentsEmail(email);
 
             List<Map<String, Object>> attendanceSummary = new ArrayList<>();
-
             for (SubjectEnrollment subject : subjects) {
-                List<Attendance> attendanceRecords = attendanceRepository
-                        .findByStudentEmailAndSubjectIdAndDateBetween(
-                                email,
-                                subject.getId(),
-                                start,
-                                end
+                List<Attendance> records =
+                        attendanceRepository.findByStudentEmailAndSubjectIdAndDateBetween(
+                                email, subject.getId(), start, end
                         );
 
-                long totalClasses = attendanceRecords.stream()
+                long totalClasses = records.stream()
                         .map(Attendance::getDate)
                         .distinct()
                         .count();
-
-                long presentCount = attendanceRecords.stream()
+                long presentCount = records.stream()
                         .filter(Attendance::isPresent)
                         .count();
+                double percentage = totalClasses > 0
+                        ? Math.round((presentCount * 100.0 / totalClasses) * 100) / 100.0
+                        : 0.0;
 
-                double percentage = totalClasses > 0 ?
-                        Math.round((presentCount * 100.0 / totalClasses) * 100) / 100.0 :
-                        0.0;
+                Map<String, Object> summary = new HashMap<>();
+                summary.put("subjectName",
+                        subject.getSubjectName() + "(" + subject.getCredits() + ")");
+                summary.put("subjectCode", subject.getSubjectCode());
+                summary.put("faculty", subject.getFaculty().getName());
+                summary.put("totalLectures", totalClasses);
+                summary.put("totalPresent", presentCount);
+                summary.put("percentage", percentage);
 
-                Map<String, Object> subjectSummary = new HashMap<>();
-                subjectSummary.put("subjectName", subject.getSubjectName() + "(" + subject.getCredits() + ")");
-                subjectSummary.put("subjectCode", subject.getSubjectCode());
-                subjectSummary.put("faculty", subject.getFaculty().getName());
-                subjectSummary.put("totalLectures", totalClasses);
-                subjectSummary.put("totalPresent", presentCount);
-                subjectSummary.put("percentage", percentage);
-
-                attendanceSummary.add(subjectSummary);
+                attendanceSummary.add(summary);
             }
 
             double overallPercentage = attendanceSummary.stream()
-                    .mapToDouble(s -> (double)s.get("percentage"))
+                    .mapToDouble(m -> (double) m.get("percentage"))
                     .average()
                     .orElse(0.0);
 
             Map<String, Object> response = new HashMap<>();
             response.put("startDate", start);
             response.put("endDate", end);
-            response.put("overallPercentage", Math.round(overallPercentage * 100) / 100.0);
+            response.put("overallPercentage",
+                    Math.round(overallPercentage * 100) / 100.0);
             response.put("subjects", attendanceSummary);
 
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error generating attendance summary: " + e.getMessage());
+                    .body("Error: " + e.getMessage());
         }
     }
 
@@ -160,26 +171,32 @@ public class StudentController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!user.getEmail().equalsIgnoreCase(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Access denied");
             }
 
-            SubjectEnrollment subject = subjectEnrollmentRepo.findById(subjectId)
-                    .orElseThrow(() -> new RuntimeException("Subject not found"));
+            SubjectEnrollment subject =
+                    subjectEnrollmentRepo.findById(subjectId)
+                            .orElseThrow(() ->
+                                    new RuntimeException("Subject not found"));
 
-            // Verify student is enrolled
+            // Verify the student is enrolled
             boolean isEnrolled = subject.getEnrolledStudents().stream()
-                    .anyMatch(s -> s.getEmail().equalsIgnoreCase(email));
-
+                    .anyMatch(s -> s.getEmail()
+                            .equalsIgnoreCase(email));
             if (!isEnrolled) {
                 throw new RuntimeException("Student is not enrolled in this subject");
             }
 
-            List<Attendance> attendanceRecords = attendanceRepository
-                    .findByStudentEmailAndSubjectId(email, subjectId);
+            List<Attendance> records =
+                    attendanceRepository.findByStudentEmailAndSubjectId(email,
+                            subjectId);
 
-            return ResponseEntity.ok(attendanceRecords);
+            return ResponseEntity.ok(records);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage());
         }
     }
 }

@@ -1,8 +1,11 @@
 package com.mayank.CampusCloudUniversityCampusSystem.repository;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.Attendance;
+import com.mayank.CampusCloudUniversityCampusSystem.model.AttendanceDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -38,4 +41,14 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             LocalDate startDate,
             LocalDate endDate
     );
+
+    @Query("SELECT new com.mayank.CampusCloudUniversityCampusSystem.model.AttendanceDTO(a) " +
+            "FROM Attendance a WHERE a.subject.id = :subjectId AND a.date = :date")
+    List<AttendanceDTO> findDTOBySubjectIdAndDate(@Param("subjectId") Long subjectId,
+                                                  @Param("date") LocalDate date);
+
+    @Query("SELECT DISTINCT a.date FROM Attendance a WHERE a.subject.id = :subjectId")
+    List<LocalDate> findDistinctDatesBySubjectId(@Param("subjectId") Long subjectId);
+
+
 }

@@ -22,7 +22,10 @@ import {
   StatsItem,
   StatsTitle,
   StatsValue,
+  StudentInfo,
   RemarksInput,
+  AttendanceControls,
+  RadioGroup,
 } from "../../styles/AttendanceStyles";
 
 const API_BASE_URL = "http://localhost:8080/api";
@@ -47,12 +50,12 @@ const CheckAttendanceSection = () => {
     },
   };
 
-  // Fetch subjects taught by the faculty
   const fetchSubjects = useCallback(async () => {
     try {
       setLoading((prev) => ({ ...prev, subjects: true }));
+      const facultyEmail = localStorage.getItem("userEmail");
       const response = await axios.get(
-        `${API_BASE_URL}/enrollments/faculty`,
+        `${API_BASE_URL}/attendance/faculty/${facultyEmail}/subjects`,
         authConfig
       );
       setSubjects(response.data);
@@ -69,93 +72,46 @@ const CheckAttendanceSection = () => {
     }
   }, []);
 
-  // Fetch students enrolled in selected subject
-  const fetchStudents = useCallback(async () => {
+  const fetchAttendance = useCallback(async () => {
     if (!selectedSubject) return;
     try {
       setLoading((prev) => ({ ...prev, students: true }));
-      setStudents([]);
-      setAttendanceData({});
-
-      const response = await axios.get(
-        `${API_BASE_URL}/enrollments/${selectedSubject}`,
-        authConfig
-      );
-
-      // Check if students are returned properly
-      console.log("Subject enrollment response:", response.data);
-
-      if (
-        response.data.enrolledStudents &&
-        response.data.enrolledStudents.length > 0
-      ) {
-        setStudents(response.data.enrolledStudents);
-      } else {
-        toast.info("No students enrolled in this subject");
-        setStudents([]);
-      }
-    } catch (err) {
-      console.error("Error fetching students:", err);
-      toast.error(
-        "Failed to fetch students: " +
-          (err.response?.data?.message || err.message)
-      );
-    } finally {
-      setLoading((prev) => ({ ...prev, students: false }));
-    }
-  }, [selectedSubject]);
-
-  // Load existing attendance for selected date
-  const loadExistingAttendance = useCallback(async () => {
-    if (!selectedSubject || students.length === 0) return;
-
-    try {
       const response = await axios.get(
         `${API_BASE_URL}/attendance/subject/${selectedSubject}/date/${date}`,
         authConfig
       );
 
-      const newAttendanceData = {};
-      response.data.forEach((record) => {
-        // Use student email as key
-        newAttendanceData[record.student.email] = {
-          present: record.present,
-          remarks: record.remarks || "",
+      const studentList = response.data.map((item) => ({
+        id: item.id,
+        email: item.studentEmail,
+        name: item.studentName,
+        rollNo: item.studentRollNo,
+      }));
+
+      setStudents(studentList);
+
+      const initialData = {};
+      studentList.forEach((student) => {
+        const attendance = response.data.find(
+          (a) => a.studentEmail === student.email
+        );
+        initialData[student.email] = {
+          present: attendance ? attendance.present : null,
+          remarks: attendance ? attendance.remarks : "",
         };
       });
 
-      // Initialize all students
-      students.forEach((student) => {
-        if (!newAttendanceData[student.email]) {
-          newAttendanceData[student.email] = {
-            present: null,
-            remarks: "",
-          };
-        }
-      });
-
-      setAttendanceData(newAttendanceData);
+      setAttendanceData(initialData);
     } catch (err) {
-      if (err.response?.status === 404) {
-        // No attendance exists for this date - initialize empty
-        const emptyData = {};
-        students.forEach((student) => {
-          emptyData[student.email] = {
-            present: null,
-            remarks: "",
-          };
-        });
-        setAttendanceData(emptyData);
-      } else {
-        toast.error(
-          "Failed to load attendance: " +
-            (err.response?.data?.message || err.message)
-        );
-      }
+      toast.error(
+        "Failed to fetch attendance: " +
+          (err.response?.data?.message || err.message)
+      );
+    } finally {
+      setLoading((prev) => ({ ...prev, students: false }));
     }
-  }, [selectedSubject, students, date]);
+  }, [selectedSubject, date]);
 
-  // Fetch attendance statistics
   const fetchStats = useCallback(async () => {
     if (!selectedSubject) return;
     try {
@@ -174,15 +130,11 @@ const CheckAttendanceSection = () => {
     }
   }, [selectedSubject]);
 
-  // Handle attendance submission
   const handleSubmit = async () => {
     try {
       setLoading((prev) => ({ ...prev, submission: true }));
 
       const facultyEmail = localStorage.getItem("userEmail");
-      if (!facultyEmail) throw new Error("Faculty email not found");
-
-      // Prepare bulk attendance request
       const studentAttendances = students.map((student) => ({
         studentEmail: student.email,
         present: attendanceData[student.email]?.present || false,
@@ -197,11 +149,9 @@ const CheckAttendanceSection = () => {
       };
 
       await axios.post(`${API_BASE_URL}/attendance/bulk`, request, authConfig);
-
       toast.success("Attendance submitted successfully!");
       fetchStats();
     } catch (err) {
-      console.error("Submission error:", err);
       toast.error(
         "Submission failed: " + (err.response?.data?.message || err.message)
       );
@@ -210,169 +160,151 @@ const CheckAttendanceSection = () => {
     }
   };
 
-  // Initial data fetch
   useEffect(() => {
     fetchSubjects();
   }, [fetchSubjects]);
 
-  // When subject changes, fetch students and stats
   useEffect(() => {
     if (selectedSubject) {
-      fetchStudents();
+      fetchAttendance();
       fetchStats();
     }
-  }, [selectedSubject, fetchStudents, fetchStats]);
-
-  // When students or date changes, load attendance
-  useEffect(() => {
-    if (students.length > 0) {
-      loadExistingAttendance();
-    }
-  }, [students, date, loadExistingAttendance]);
+  }, [selectedSubject, date, fetchAttendance, fetchStats]);
 
   return (
     <AttendanceContainer>
-      <Sidebar />
       <Content>
-        <AttendanceContent>
-          <AttendanceHeader>
-            Mark Attendance - {new Date(date).toLocaleDateString()}
-          </AttendanceHeader>
+        <AttendanceHeader>
+          Mark Attendance - {new Date(date).toLocaleDateString()}
+        </AttendanceHeader>
 
-          <ToastContainer position="top-center" autoClose={3000} />
+        <ToastContainer position="top-center" autoClose={3000} />
 
-          {loading.subjects ? (
-            <LoadingMessage>Loading subjects...</LoadingMessage>
-          ) : subjects.length > 0 ? (
-            <>
-              <SubjectSelector
-                value={selectedSubject || ""}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                disabled={loading.subjects || loading.students}
-              >
-                {subjects.map((subject) => (
-                  <option key={subject.id} value={subject.id}>
-                    {subject.subjectName} ({subject.subjectCode})
-                  </option>
-                ))}
-              </SubjectSelector>
+        {loading.subjects ? (
+          <LoadingMessage>Loading subjects...</LoadingMessage>
+        ) : subjects.length > 0 ? (
+          <>
+            <SubjectSelector
+              value={selectedSubject || ""}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              disabled={loading.subjects || loading.students}
+            >
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.subjectName} ({subject.subjectCode})
+                </option>
+              ))}
+            </SubjectSelector>
 
-              <DatePicker
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-              />
+            <DatePicker
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+            />
 
-              {stats && (
-                <StatsContainer>
-                  <StatsItem>
-                    <StatsTitle>Total Classes</StatsTitle>
-                    <StatsValue>{stats.totalClasses}</StatsValue>
-                  </StatsItem>
-                  <StatsItem>
-                    <StatsTitle>Average Attendance</StatsTitle>
-                    <StatsValue>{stats.attendancePercentage}%</StatsValue>
-                  </StatsItem>
-                </StatsContainer>
-              )}
+            {stats && (
+              <StatsContainer>
+                <StatsItem>
+                  <StatsTitle>Total Classes</StatsTitle>
+                  <div>{stats.totalClasses}</div>
+                </StatsItem>
+                <StatsItem>
+                  <StatsTitle>Average Attendance</StatsTitle>
+                  <div>{stats.attendancePercentage}%</div>
+                </StatsItem>
+              </StatsContainer>
+            )}
 
-              {loading.students ? (
-                <LoadingMessage>Loading students...</LoadingMessage>
-              ) : students.length === 0 ? (
-                <EmptyMessage>
-                  No students enrolled in this subject
-                </EmptyMessage>
-              ) : (
-                <>
-                  <AttendanceList>
-                    {students.map((student) => (
-                      <React.Fragment key={student.email}>
-                        <AttendanceItem>
-                          <StudentName>
-                            {student.name} ({student.rollNo || student.univId})
-                          </StudentName>
+            {loading.students ? (
+              <LoadingMessage>Loading students...</LoadingMessage>
+            ) : students.length === 0 ? (
+              <div>No students found for this subject</div>
+            ) : (
+              <>
+                <AttendanceList>
+                  {students.map((student) => (
+                    <AttendanceItem key={`student-${student.email}`}>
+                      <StudentInfo>
+                        <div>{student.name}</div>
+                        <div>
+                          {student.rollNo} • {student.email}
+                        </div>
+                      </StudentInfo>
 
-                          <div>
-                            <CheckboxLabel>
-                              <input
-                                type="radio"
-                                name={`attendance-${student.email}`}
-                                checked={
-                                  attendanceData[student.email]?.present ===
-                                  true
-                                }
-                                onChange={() => {
-                                  setAttendanceData((prev) => ({
-                                    ...prev,
-                                    [student.email]: {
-                                      ...prev[student.email],
-                                      present: true,
-                                    },
-                                  }));
-                                }}
-                              />
-                              Present
-                            </CheckboxLabel>
+                      <AttendanceControls>
+                        <RadioGroup>
+                          <CheckboxLabel>
+                            <input
+                              type="radio"
+                              checked={
+                                attendanceData[student.email]?.present === true
+                              }
+                              onChange={() => {
+                                setAttendanceData((prev) => ({
+                                  ...prev,
+                                  [student.email]: {
+                                    ...(prev[student.email] || {}),
+                                    present: true,
+                                  },
+                                }));
+                              }}
+                            />
+                            Present
+                          </CheckboxLabel>
 
-                            <CheckboxLabel>
-                              <input
-                                type="radio"
-                                name={`attendance-${student.email}`}
-                                checked={
-                                  attendanceData[student.email]?.present ===
-                                  false
-                                }
-                                onChange={() => {
-                                  setAttendanceData((prev) => ({
-                                    ...prev,
-                                    [student.email]: {
-                                      ...prev[student.email],
-                                      present: false,
-                                    },
-                                  }));
-                                }}
-                              />
-                              Absent
-                            </CheckboxLabel>
-                          </div>
+                          <CheckboxLabel>
+                            <input
+                              type="radio"
+                              checked={
+                                attendanceData[student.email]?.present === false
+                              }
+                              onChange={() => {
+                                setAttendanceData((prev) => ({
+                                  ...prev,
+                                  [student.email]: {
+                                    ...(prev[student.email] || {}),
+                                    present: false,
+                                  },
+                                }));
+                              }}
+                            />
+                            Absent
+                          </CheckboxLabel>
+                        </RadioGroup>
 
-                          <RemarksInput
-                            type="text"
-                            placeholder="Remarks"
-                            value={attendanceData[student.email]?.remarks || ""}
-                            onChange={(e) => {
-                              setAttendanceData((prev) => ({
-                                ...prev,
-                                [student.email]: {
-                                  ...prev[student.email],
-                                  remarks: e.target.value,
-                                },
-                              }));
-                            }}
-                          />
-                        </AttendanceItem>
-                        <Divider />
-                      </React.Fragment>
-                    ))}
-                  </AttendanceList>
+                        <RemarksInput
+                          value={attendanceData[student.email]?.remarks || ""}
+                          onChange={(e) => {
+                            setAttendanceData((prev) => ({
+                              ...prev,
+                              [student.email]: {
+                                ...(prev[student.email] || {}),
+                                remarks: e.target.value,
+                              },
+                            }));
+                          }}
+                          placeholder="Remarks"
+                        />
+                      </AttendanceControls>
+                    </AttendanceItem>
+                  ))}
+                </AttendanceList>
 
-                  <SubmitButton
-                    onClick={handleSubmit}
-                    disabled={loading.submission || students.length === 0}
-                  >
-                    {loading.submission ? "Submitting..." : "Submit Attendance"}
-                  </SubmitButton>
-                </>
-              )}
-            </>
-          ) : (
-            <EmptyMessage>No subjects assigned to you</EmptyMessage>
-          )}
-        </AttendanceContent>
+                <SubmitButton
+                  onClick={handleSubmit}
+                  disabled={loading.submission || students.length === 0}
+                >
+                  {loading.submission ? "Submitting..." : "Submit Attendance"}
+                </SubmitButton>
+              </>
+            )}
+          </>
+        ) : (
+          <div>No subjects assigned to you</div>
+        )}
       </Content>
     </AttendanceContainer>
   );
 };
-
 export default CheckAttendanceSection;
