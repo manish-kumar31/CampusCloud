@@ -74,6 +74,38 @@ export const Content = styled.div`
   overflow-y: auto;
 `;
 
+export const ErrorMessage = styled.p`
+  color: red;
+  font-size: 14px;
+  margin-top: 8px;
+`;
+
+export const LoadingMessage = styled.p`
+  color: #666;
+  font-size: 16px;
+  margin-top: 20px;
+  text-align: center;
+`;
+export const StudentInfo = styled.div`
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-bottom: 12px;
+`;
+export const StudentLabel = styled.label`
+  font-weight: bold;
+  margin-right: 8px;
+  display: inline-block;
+  margin-bottom: 4px;
+  color: #333;
+`;
+export const StudentValue = styled.p`
+  margin: 0 0 10px 0;
+  color: #555;
+  font-size: 15px;
+`;
+
 export const StudentsContent = styled.div`
   max-width: 1200px;
   margin: 0 auto;

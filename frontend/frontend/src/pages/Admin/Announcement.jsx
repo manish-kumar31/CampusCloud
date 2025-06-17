@@ -49,8 +49,9 @@ const Announcement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/api/delete/Announcement${id}`);
+      await axios.delete(`http://localhost:8080/api/delete/Announcement/${id}`);
       fetchAllAnnouncements();
+      alert("Announcement deleted successfully!");
     } catch (error) {
       console.error("Error deleting announcement:", error);
       alert("Failed to delete announcement");

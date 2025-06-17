@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Link } from 'react-router-dom'; 
-import { BsGraphUp, BsPeople, BsPerson, BsFileText, BsBook, BsGraphDown, BsCalendar, BsGear, BsChatDots, BsCalendarEvent, BsQuestionSquare } from 'react-icons/bs';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+import {
+  BsGraphUp,
+  BsPeople,
+  BsPerson,
+  BsFileText,
+  BsBook,
+  BsGraphDown,
+  BsCalendar,
+  BsGear,
+  BsChatDots,
+  BsCalendarEvent,
+  BsQuestionSquare,
+} from "react-icons/bs";
 import bg1 from "../../assets/bg1.png";
 
 const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: ${({ $isOpen }) => ($isOpen ? '250px' : '80px')};
+  width: ${({ $isOpen }) => ($isOpen ? "250px" : "80px")};
   width: 250px;
   height: 100%;
   background-color: rgb(34, 36, 141); /* Dark blue background */
@@ -75,7 +87,7 @@ const ToggleButton = styled.div`
 const ToggleIcon = styled.span`
   color: white;
   font-size: 20px;
-  transform: ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
   transition: transform 0.3s ease;
 `;
 
@@ -85,59 +97,47 @@ const Sidebar = () => {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
-   
+
   return (
     <SidebarContainer $isOpen={isOpen}>
-        <SidebarHeader>
-<Logo src={bg1} alt="Logo" />
+      <SidebarHeader>
+        <Logo src={bg1} alt="Logo" />
       </SidebarHeader>
       <SidebarHeader>Teacher</SidebarHeader>
       <SidebarNav>
         <SidebarNavItem>
-          <SidebarIcon><BsGraphUp /></SidebarIcon>
+          <SidebarIcon>
+            <BsGraphUp />
+          </SidebarIcon>
           <StyledLink to="/teacher/dashboard">Dashboard</StyledLink>
         </SidebarNavItem>
+
         <SidebarNavItem>
-          <SidebarIcon><BsPeople /></SidebarIcon>
-          <StyledLink to="/teacher/classes">Classes</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsPeople /></SidebarIcon>
+          <SidebarIcon>
+            <BsPeople />
+          </SidebarIcon>
           <StyledLink to="/teacher/students">Students</StyledLink>
         </SidebarNavItem>
+
         <SidebarNavItem>
-          <SidebarIcon><BsPerson /></SidebarIcon>
-          <StyledLink to="/teacher/teachers">Teachers</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsFileText /></SidebarIcon>
-          <StyledLink to="/teacher/assignments">Assignments</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsBook /></SidebarIcon>
-          <StyledLink to="/teacher/exams">Exams</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsGraphDown /></SidebarIcon>
-          <StyledLink to="/teacher/performance">Performance</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsCalendar /></SidebarIcon>
+          <SidebarIcon>
+            <BsCalendar />
+          </SidebarIcon>
           <StyledLink to="/teacher/attendance">Attendance</StyledLink>
         </SidebarNavItem>
         <SidebarNavItem>
-          <SidebarIcon><BsChatDots /></SidebarIcon>
+          <SidebarIcon>
+            <BsChatDots />
+          </SidebarIcon>
           <StyledLink to="/teacher/communication">Announcement</StyledLink>
         </SidebarNavItem>
+
         <SidebarNavItem>
-          <SidebarIcon><BsCalendarEvent /></SidebarIcon>
-          <StyledLink to="/teacher/events">Events & Calendar</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsGear /></SidebarIcon>
+          <SidebarIcon>
+            <BsGear />
+          </SidebarIcon>
           <StyledLink to="/teacher/settings">Settings & Profile</StyledLink>
         </SidebarNavItem>
-        
       </SidebarNav>
       <ToggleButton onClick={toggleSidebar}>
         <ToggleIcon $isOpen={isOpen}>▲</ToggleIcon>

@@ -49,15 +49,13 @@ public class AnnouncementController {
             }
     }
 
-    @DeleteMapping("/delete/Announcement")
+    @DeleteMapping("/delete/Announcement/{id}")
     public ResponseEntity<?> deleteAnnouncement(@PathVariable Long id){
-            try{
-                service.deleteAnnouncement(id);
-                return new ResponseEntity<>("Announcement deleted",HttpStatus.OK);
-            }
-            catch (Exception e) {
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-            }
+        try {
+            service.deleteAnnouncement(id);
+            return new ResponseEntity<>("Announcement deleted", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
-
 }

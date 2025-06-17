@@ -130,49 +130,12 @@ const Sidebar = () => {
             </SidebarIcon>
             <StyledLink to="/admin/teachers">Teachers</StyledLink>
           </SidebarNavItem>
-          {/* <SidebarNavItem>
-            <SidebarIcon><BsFileText /></SidebarIcon>
-            <StyledLink to="/admin/assignments">Assignments</StyledLink>
-          </SidebarNavItem> */}
-          <SidebarNavItem>
-            <SidebarIcon>
-              <BsBook />
-            </SidebarIcon>
-            <StyledLink to="/admin/exams">Exams</StyledLink>
-          </SidebarNavItem>
-          {/* <SidebarNavItem>
-            <SidebarIcon><BsGraphDown /></SidebarIcon>
-            <StyledLink to="/admin/performance">Performance</StyledLink>
-          </SidebarNavItem> */}
-          <SidebarNavItem>
-            {/* <SidebarIcon>
-              <BsCalendar />
-            </SidebarIcon> */}
-            {/* <StyledLink to="/admin/attendance">Attendance</StyledLink> */}
-          </SidebarNavItem>
-          <SidebarNavItem>
-            <SidebarIcon>
-              <BsBook />
-            </SidebarIcon>
-            <StyledLink to="/admin/library">Library</StyledLink>
-          </SidebarNavItem>
+
           <SidebarNavItem>
             <SidebarIcon>
               <BsChatDots />
             </SidebarIcon>
             <StyledLink to="/admin/communication">Announcement</StyledLink>
-          </SidebarNavItem>
-          <SidebarNavItem>
-            <SidebarIcon>
-              <BsCalendarEvent />
-            </SidebarIcon>
-            <StyledLink to="/admin/events">Events & Calendar</StyledLink>
-          </SidebarNavItem>
-          <SidebarNavItem>
-            <SidebarIcon>
-              <BsGear />
-            </SidebarIcon>
-            <StyledLink to="/admin/settings">Settings & Profile</StyledLink>
           </SidebarNavItem>
         </SidebarNav>
         <ToggleButton $isOpen={isOpen} onClick={toggleSidebar}>

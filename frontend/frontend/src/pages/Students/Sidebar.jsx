@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Link } from 'react-router-dom'; 
-import { BsGraphUp, BsPeople, BsPerson, BsFileText, BsBook, BsGraphDown, BsCalendar, BsGear, BsChatDots, BsCalendarEvent, BsQuestionSquare } from 'react-icons/bs';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+import {
+  BsGraphUp,
+  BsPeople,
+  BsPerson,
+  BsFileText,
+  BsBook,
+  BsGraphDown,
+  BsCalendar,
+  BsGear,
+  BsChatDots,
+  BsCalendarEvent,
+  BsQuestionSquare,
+} from "react-icons/bs";
 import bg1 from "../../assets/bg1.png";
 
 const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: ${({ $isOpen }) => ($isOpen ? '250px' : '80px')};
+  width: ${({ $isOpen }) => ($isOpen ? "250px" : "80px")};
   width: 250px;
   height: 100%;
   background-color: rgb(34, 36, 141); /* Dark blue background */
@@ -75,7 +87,7 @@ const ToggleButton = styled.div`
 const ToggleIcon = styled.span`
   color: white;
   font-size: 20px;
-  transform: ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
   transition: transform 0.3s ease;
 `;
 
@@ -84,47 +96,40 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
-  }; 
+  };
   return (
     <SidebarContainer $isOpen={isOpen}>
-        <SidebarHeader>
+      <SidebarHeader>
         <Logo src={bg1} alt="Logo" />
       </SidebarHeader>
       <SidebarHeader>Student</SidebarHeader>
       <SidebarNav>
         <SidebarNavItem>
-          <SidebarIcon><BsGraphUp /></SidebarIcon>
+          <SidebarIcon>
+            <BsGraphUp />
+          </SidebarIcon>
           <StyledLink to="/student/dashboard">Dashboard</StyledLink>
         </SidebarNavItem>
+
         <SidebarNavItem>
-          <SidebarIcon><BsFileText /></SidebarIcon>
-          <StyledLink to="/student/assignments">Assignments</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsBook /></SidebarIcon>
-          <StyledLink to="/student/exams">Exams</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsGraphDown /></SidebarIcon>
-          <StyledLink to="/student/performance">Performance</StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsCalendar /></SidebarIcon>
+          <SidebarIcon>
+            <BsCalendar />
+          </SidebarIcon>
           <StyledLink to="/student/attendance">Attendance</StyledLink>
         </SidebarNavItem>
+
         <SidebarNavItem>
-        <SidebarIcon><BsBook /></SidebarIcon>
-          <StyledLink to="/student/library">Library </StyledLink>
-        </SidebarNavItem>
-        <SidebarNavItem>
-          <SidebarIcon><BsChatDots /></SidebarIcon>
+          <SidebarIcon>
+            <BsChatDots />
+          </SidebarIcon>
           <StyledLink to="/student/communication">Announcement</StyledLink>
         </SidebarNavItem>
         <SidebarNavItem>
-          <SidebarIcon><BsGear /></SidebarIcon>
+          <SidebarIcon>
+            <BsGear />
+          </SidebarIcon>
           <StyledLink to="/student/settings">Profile</StyledLink>
         </SidebarNavItem>
-        
       </SidebarNav>
       <ToggleButton onClick={toggleSidebar}>
         <ToggleIcon $isOpen={isOpen}>▲</ToggleIcon>

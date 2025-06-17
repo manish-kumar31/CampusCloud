@@ -45,7 +45,7 @@
         private String bloodGroup;
 
         @Lob
-        @Column(nullable = true)
+        @Column(name = "image", columnDefinition = "LONGBLOB")
         private byte[] image;
 
         @OneToMany(mappedBy = "faculty")

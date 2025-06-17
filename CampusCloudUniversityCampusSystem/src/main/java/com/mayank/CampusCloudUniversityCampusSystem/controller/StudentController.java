@@ -5,8 +5,10 @@ import com.mayank.CampusCloudUniversityCampusSystem.repository.*;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -199,4 +201,85 @@ public class StudentController {
                     .body(e.getMessage());
         }
     }
+    @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadProfileImage(
+            @RequestParam("image") MultipartFile file,
+            @RequestParam("email") String email,
+            @RequestHeader("Authorization") String authHeader) {
+
+        try {
+            // Authentication and validation
+            String token = authHeader.replace("Bearer ", "");
+            User user = authService.verifyTokenAndGetUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!user.getEmail().equalsIgnoreCase(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            // Validate image
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Please select an image file");
+            }
+            if (!file.getContentType().startsWith("image/")) {
+                return ResponseEntity.badRequest().body("Only image files are allowed");
+            }
+            if (file.getSize() > 2 * 1024 * 1024) {
+                return ResponseEntity.badRequest().body("Image size must be less than 2MB");
+            }
+
+            // Save image
+            Student student = studentRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            student.setStuImage(file.getBytes());
+            Student savedStudent = studentRepository.save(student);
+
+            // Return success response with image data
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Image uploaded successfully");
+            response.put("email", email);
+            response.put("imageSize", savedStudent.getStuImage().length);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error uploading image: " + e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/profile-image/{email}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<?> getProfileImage(
+            @PathVariable String email,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            // Authentication
+            String token = authHeader.replace("Bearer ", "");
+            User user = authService.verifyTokenAndGetUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!user.getEmail().equalsIgnoreCase(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            // Get image
+            Student student = studentRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            if (student.getStuImage() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No profile image found");
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(student.getStuImage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving image: " + e.getMessage());
+        }
+    }
+
 }

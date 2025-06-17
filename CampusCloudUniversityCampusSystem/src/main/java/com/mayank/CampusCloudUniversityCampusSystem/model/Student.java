@@ -69,8 +69,9 @@ public class Student {
     @Column(nullable = true,unique = true,name= "univ_id")
     private String univId;
 
+
     @Lob
-    @Column (nullable = true,updatable = true)
+    @Column(name = "stu_image", columnDefinition = "LONGBLOB")
     private byte[] stuImage;
 
     @ManyToMany(mappedBy = "enrolledStudents")

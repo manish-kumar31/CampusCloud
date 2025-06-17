@@ -10,35 +10,71 @@ import {
   Card,
   CardTitle,
   CardContent,
+  PDFViewer,
 } from "../../styles/DashboardStyles";
 
+const API_BASE_URL = "http://localhost:8080/api";
+
 const StudentDashboard = () => {
+  const [isOpen, setIsOpen] = useState(true);
   const [studentData, setStudentData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingStudent, setLoadingStudent] = useState(true);
+  const [calendarPdf, setCalendarPdf] = useState(null);
+  const [loadingCalendar, setLoadingCalendar] = useState(true);
+  const [currentCalendarTitle, setCurrentCalendarTitle] = useState("");
 
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
+        const token = localStorage.getItem("authToken");
+        const email = localStorage.getItem("userEmail");
         const response = await axios.get(
-          "http://localhost:8080/api/student/dashboard"
+          `${API_BASE_URL}/students/by-email/${email}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         setStudentData(response.data);
       } catch (error) {
         console.error("Error fetching student data:", error);
       } finally {
-        setLoading(false);
+        setLoadingStudent(false);
       }
     };
-
     fetchStudentData();
   }, []);
 
-  if (loading) return <div>Loading dashboard...</div>;
+  useEffect(() => {
+    const fetchCalendar = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/calendar`, {
+          responseType: "blob",
+        });
+        if (response.data.size > 0) {
+          const pdfUrl = URL.createObjectURL(response.data);
+          setCalendarPdf(pdfUrl);
+          const header = response.headers["content-disposition"];
+          const match = header && header.match(/filename="(.+)"/);
+          setCurrentCalendarTitle(match ? match[1] : "Academic Calendar");
+        }
+      } catch (error) {
+        console.error("Error fetching calendar:", error);
+      } finally {
+        setLoadingCalendar(false);
+      }
+    };
+    fetchCalendar();
+    return () => {
+      if (calendarPdf) URL.revokeObjectURL(calendarPdf);
+    };
+  }, []);
+
+  if (loadingStudent) return <div>Loading dashboard...</div>;
 
   return (
     <DashboardContainer>
-      <Sidebar />
-      <Content>
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Content $isOpen={isOpen}>
         <Section>
           <SectionTitle>
             Welcome, {studentData?.name || "Student"}!
@@ -52,7 +88,6 @@ const StudentDashboard = () => {
                 <div>Semester: {studentData?.semester || "N/A"}</div>
               </CardContent>
             </Card>
-
             <Card>
               <CardTitle>Contact Information</CardTitle>
               <CardContent>
@@ -62,6 +97,23 @@ const StudentDashboard = () => {
               </CardContent>
             </Card>
           </CardContainer>
+        </Section>
+        <Section>
+          <SectionTitle>{currentCalendarTitle}</SectionTitle>
+          {loadingCalendar ? (
+            <div>Loading calendar...</div>
+          ) : calendarPdf ? (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <PDFViewer
+                src={calendarPdf}
+                width="80%"
+                height="600px"
+                title={currentCalendarTitle}
+              />
+            </div>
+          ) : (
+            <div>No calendar available.</div>
+          )}
         </Section>
       </Content>
     </DashboardContainer>

@@ -2,7 +2,6 @@ package com.mayank.CampusCloudUniversityCampusSystem.controller;
 
 import com.mayank.CampusCloudUniversityCampusSystem.model.User;
 import com.mayank.CampusCloudUniversityCampusSystem.service.AuthService;
-import com.mayank.CampusCloudUniversityCampusSystem.service.StudentService;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

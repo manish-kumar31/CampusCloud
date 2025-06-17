@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./Sidebar";
+import axios from "axios";
 import {
   AnnouncementContainer,
   Content,
@@ -8,47 +8,60 @@ import {
   AnnouncementList,
   AnnouncementItem,
   AnnouncementContent,
-} from '../../styles/AnnouncementStyles';
+} from "../../styles/AnnouncementStyles";
 
-const Announcement = () => {
-  const [latestAnnouncement, setLatestAnnouncement] = useState(null);
+const StudentAnnouncement = () => {
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const fetchLatestAnnouncement = async () => {
+  const fetchAnnouncements = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/announcement');
-      setLatestAnnouncement(response.data);
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(
+        "http://localhost:8080/api/all/announcement",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setAnnouncements(response.data);
     } catch (error) {
-      console.error('Error fetching announcement:', error);
+      setError("Failed to load announcements");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLatestAnnouncement();
+    fetchAnnouncements();
   }, []);
 
   return (
     <AnnouncementContainer>
       <Sidebar />
       <Content>
-        <Title>Announcement</Title>
+        <Title>Announcements</Title>
 
-        {/* Display Latest Announcement */}
-        <h2>Latest Announcement</h2>
+        {loading && <p>Loading...</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
         <AnnouncementList>
-          {latestAnnouncement ? (
-            <AnnouncementItem>
-              <AnnouncementContent>
-                <strong>{latestAnnouncement.title}</strong>
-                <p>{latestAnnouncement.message}</p>
-              </AnnouncementContent>
-            </AnnouncementItem>
-          ) : (
-            <p>No announcements yet.</p>
-          )}
+          {announcements.length > 0
+            ? announcements.map((item) => (
+                <AnnouncementItem key={item.id}>
+                  <AnnouncementContent>
+                    <h3>{item.title}</h3>
+                    <p>{item.message}</p>
+                  </AnnouncementContent>
+                </AnnouncementItem>
+              ))
+            : !loading && <p>No announcements available</p>}
         </AnnouncementList>
       </Content>
     </AnnouncementContainer>
   );
 };
 
-export default Announcement;  
+export default StudentAnnouncement;
