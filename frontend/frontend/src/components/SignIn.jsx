@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+
+import { auth } from "../firebase";
 import {
-  auth,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-} from "../firebase";
+} from "firebase/auth";
+
 import {
   AuthContainer,
   FormContainer,
